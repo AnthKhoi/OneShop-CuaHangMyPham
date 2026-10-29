@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<header class="admin-topbar" th:fragment="admin-topbar">
+    <div class="d-flex align-items-center gap-3">
+        <h5 class="m-0 fw-bold text-dark">OneShop Retail Operations</h5>
+        <a th:href="@{/}" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1 fw-bold shadow-sm px-3 py-1 ms-2" title="Quay về trang chính cửa hàng">
+            <i class="bi bi-house-door-fill"></i> Quay về trang chính
+        </a>
+    </div>
+
+    <div class="d-flex align-items-center gap-3">
+        <!-- Role Badge -->
+        <span class="badge bg-danger py-2 px-3 fw-bold" th:if="${currentUser != null and currentUser.isAdmin()}">ADMIN</span>
+        <span class="badge bg-primary py-2 px-3 fw-bold" th:if="${currentUser != null and currentUser.isBranchManager()}">QUẢN LÝ CHI NHÁNH</span>
+        <span class="badge bg-success py-2 px-3 fw-bold" th:if="${currentUser != null and currentUser.hasRole('ROLE_SALES_STAFF')}">SALES STAFF</span>
+
+        <!-- User Info -->
+        <div class="dropdown">
+            <button class="btn btn-light d-flex align-items-center gap-2 border" type="button" id="adminUserDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-circle fs-5 text-secondary"></i>
+                <span class="fw-semibold" th:text="${currentUser != null ? currentUser.fullName : 'Admin'}">Nhân viên</span>
+                <i class="bi bi-chevron-down small"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-2" aria-labelledby="adminUserDropdown">
+                <li>
+                    <div class="px-3 py-2 border-bottom">
+                        <small class="text-muted d-block">Đăng nhập với email</small>
+                        <strong class="text-truncate d-block" th:text="${currentUser != null ? currentUser.email : ''}">email</strong>
+                    </div>
+                </li>
+                <li>
+                    <a class="dropdown-item py-2" th:href="@{/account}">
+                        <i class="bi bi-person me-2"></i> Hồ sơ cá nhân
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item py-2 text-danger" th:href="@{/auth/logout}">
+                        <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất an toàn
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</header>
+</body>
+</html>

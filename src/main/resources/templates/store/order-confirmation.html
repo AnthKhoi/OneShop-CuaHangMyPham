@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Đặt Hàng Thành Công — OneShop</title>
+</head>
+<body>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Celebration Card -->
+            <div class="bg-white p-5 rounded-4 border shadow-sm text-center mb-4">
+                <div class="mb-3">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 4.5rem;"></i>
+                </div>
+                <h2 class="fw-bold text-success mb-2">Đặt Hàng Thành Công!</h2>
+                <p class="text-muted lead mb-4">Cảm ơn bạn đã tin chọn mua sắm mỹ phẩm tại hệ thống chuỗi cửa hàng OneShop.</p>
+
+                <div class="p-3 bg-light rounded-3 d-inline-block px-4 mb-4">
+                    <span class="text-muted d-block small">MÃ ĐƠN HÀNG CỦA BẠN</span>
+                    <strong class="fs-4 text-danger" th:text="${order.orderCode}">OS-20261026-0001</strong>
+                </div>
+
+                <div class="row g-3 text-start border-top pt-4">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Chi nhánh tiếp nhận xử lý:</small>
+                        <strong class="text-dark" th:text="${order.branch.name}">OneShop Quận 1</strong>
+                        <div class="small text-muted" th:text="${order.branch.address}">Địa chỉ chi nhánh</div>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Hình thức nhận hàng:</small>
+                        <strong class="text-dark" th:text="${order.fulfillmentType.description}">Giao hàng tận nơi</strong>
+                        <div class="small text-muted">Địa chỉ: <span th:text="${order.shippingAddress}">Địa chỉ</span></div>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Người nhận hàng:</small>
+                        <strong class="text-dark" th:text="${order.recipientName + ' — ' + order.recipientPhone}">Tên và SĐT</strong>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Phương thức thanh toán:</small>
+                        <span class="badge bg-light text-dark border" th:text="${order.paymentMethod.description}">COD</span>
+                        (<span class="small" th:text="${order.paymentStatus.description}">Chưa thanh toán</span>)
+                    </div>
+                </div>
+            </div>
+
+            <!-- VietQR Bank Transfer Card if BANK_TRANSFER -->
+            <div th:if="${order.paymentMethod.name() == 'BANK_TRANSFER' and order.paymentStatus.name() != 'PAID'}" class="bg-white p-4 rounded-4 border shadow-sm mb-4 text-center">
+                <h5 class="fw-bold text-primary mb-2"><i class="bi bi-qr-code-scan me-2"></i>Quét mã VietQR để thanh toán tự động</h5>
+                <p class="text-muted small mb-3">Mở ứng dụng ngân hàng bất kỳ (MB Bank, Vietcombank, Techcombank, VPBank...) quét mã QR để chuyển khoản chính xác nội dung & số tiền:</p>
+                <div class="d-inline-block p-2 border rounded-3 bg-light shadow-sm mb-3">
+                    <img th:src="${vietQrUrl}" alt="VietQR OneShop" class="img-fluid rounded" style="max-width: 280px;">
+                </div>
+                <div class="bg-light p-3 rounded-3 text-start small">
+                    <div class="d-flex justify-content-between mb-1"><span class="text-muted">Ngân hàng thụ hưởng:</span><strong th:text="${bankInfo}">MB Bank</strong></div>
+                    <div class="d-flex justify-content-between mb-1"><span class="text-muted">Nội dung chuyển khoản:</span><strong class="text-danger" th:text="${order.orderCode}">OS-CODE</strong></div>
+                    <div class="d-flex justify-content-between"><span class="text-muted">Số tiền cần thanh toán:</span><strong class="text-danger fs-6" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</strong></div>
+                </div>
+            </div>
+
+            <!-- Ordered Items Snapshot -->
+            <div class="bg-white p-4 rounded-4 border shadow-sm mb-4">
+                <h5 class="fw-bold mb-3">Chi tiết sản phẩm đã mua</h5>
+
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th>Đơn giá snapshot</th>
+                                <th>Số lượng</th>
+                                <th class="text-end">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="item : ${order.items}">
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img th:src="${item.imageUrl}" th:alt="${item.productName}" 
+                                             onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&q=80';"
+                                             class="rounded-3 border" style="width: 50px; height: 50px; object-fit: cover;">
+                                        <div>
+                                            <div class="fw-bold" th:text="${item.productName}">Tên sản phẩm</div>
+                                            <small class="text-muted">SKU: <span th:text="${item.skuSnapshot}">SKU</span></small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</td>
+                                <td th:text="${item.quantity}">1</td>
+                                <td class="text-end fw-bold text-danger" th:text="${#numbers.formatDecimal(item.lineTotal, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end text-muted">Tạm tính:</td>
+                                <td class="text-end fw-bold" th:text="${#numbers.formatDecimal(order.subtotal, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</td>
+                            </tr>
+                            <tr th:if="${order.discountAmount.compareTo(T(java.math.BigDecimal).ZERO) > 0}">
+                                <td colspan="3" class="text-end text-muted">Giảm giá voucher:</td>
+                                <td class="text-end text-success fw-bold" th:text="'- ' + ${#numbers.formatDecimal(order.discountAmount, 0, 'POINT', 0, 'POINT')} + ' ₫'">-0 ₫</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="text-end text-muted">Phí giao hàng:</td>
+                                <td class="text-end fw-bold" th:text="${order.shippingFee.compareTo(T(java.math.BigDecimal).ZERO) == 0 ? 'MIỄN PHÍ' : #numbers.formatDecimal(order.shippingFee, 0, 'POINT', 0, 'POINT') + ' ₫'}">0 ₫</td>
+                            </tr>
+                            <tr class="table-light">
+                                <td colspan="3" class="text-end fs-5 fw-bold">Tổng thanh toán:</td>
+                                <td class="text-end fs-4 fw-bold text-danger" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="d-flex justify-content-between align-items-center">
+                <a th:href="@{/products}" class="btn btn-outline-dark">
+                    <i class="bi bi-arrow-left me-1"></i> Tiếp tục mua sắm
+                </a>
+                <a th:href="@{/account/orders}" class="btn btn-os-primary" th:if="${isAuthenticated}">
+                    <i class="bi bi-receipt me-1"></i> Quản lý đơn hàng của tôi
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'Hóa đơn bán lẻ #' + ${order.orderCode} + ' — OneShop'">Hóa đơn bán lẻ — OneShop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f1f5f9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        .receipt-card {
+            max-width: 440px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 14px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+            border: 1px dashed #cbd5e1;
+        }
+        .receipt-divider {
+            border-top: 1px dashed #cbd5e1;
+            margin: 10px 0;
+        }
+        @media print {
+            @page {
+                size: portrait;
+                margin: 4mm auto;
+            }
+            html, body {
+                background: #fff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: 0 !important;
+                overflow: visible !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .container {
+                max-width: 100% !important;
+                width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .receipt-card {
+                position: static !important;
+                width: 100% !important;
+                max-width: 380px !important;
+                margin: 0 auto !important;
+                padding: 6px 10px !important;
+                border: none !important;
+                box-shadow: none !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                page-break-after: avoid !important;
+                page-break-before: avoid !important;
+            }
+            .receipt-divider {
+                margin: 8px 0 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container py-4">
+        <!-- Top Action Bar (Hidden when printing) -->
+        <div class="d-flex justify-content-center gap-2 mb-4 no-print">
+            <button onclick="window.print()" class="btn btn-dark fw-bold px-4 shadow-sm">
+                <i class="bi bi-printer me-2"></i> In hóa đơn
+            </button>
+            <a th:href="@{/admin/pos}" class="btn btn-danger fw-bold px-4 shadow-sm">
+                <i class="bi bi-cart-plus me-2"></i> Bán đơn hàng mới
+            </a>
+            <a th:href="@{/admin/orders}" class="btn btn-outline-secondary px-3">
+                <i class="bi bi-receipt me-1"></i> Quản lý đơn
+            </a>
+        </div>
+
+        <!-- Receipt Card -->
+        <div class="receipt-card">
+            <!-- Header -->
+            <div class="text-center mb-3">
+                <h4 class="fw-bold text-danger m-0"><i class="bi bi-stars"></i> OneShop Cosmetics</h4>
+                <div class="small fw-semibold text-dark mt-1" th:text="${order.branch.name}">OneShop Chi nhánh Quận 1</div>
+                <div class="small text-muted" th:text="${order.branch.address}">Địa chỉ chi nhánh</div>
+                <div class="small text-muted" th:text="'Hotline: ' + ${order.branch.phone}">Hotline: 1900 1234</div>
+            </div>
+
+            <div class="text-center my-3">
+                <h5 class="fw-bold text-uppercase m-0">HÓA ĐƠN BÁN LẺ</h5>
+                <span class="badge bg-success-subtle text-success border border-success-subtle mt-1">ĐÃ THANH TOÁN TẠI QUẦY</span>
+            </div>
+
+            <!-- Meta details -->
+            <div class="small text-muted mb-2">
+                <div class="d-flex justify-content-between">
+                    <span>Mã đơn:</span>
+                    <strong class="text-dark" th:text="${order.orderCode}">OS-POS-123</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Thời gian:</span>
+                    <span th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm:ss')}">28/10/2026 13:00</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Thu ngân:</span>
+                    <strong class="text-dark" th:text="${cashierName != null ? cashierName : (order.cashierName != null ? order.cashierName : 'Nhân viên OneShop')}">Nhân viên thu ngân</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Khách hàng:</span>
+                    <strong class="text-dark" th:text="${order.recipientName}">Khách mua tại quầy</strong>
+                </div>
+                <div class="d-flex justify-content-between" th:if="${order.recipientPhone != null and not #strings.isEmpty(order.recipientPhone)}">
+                    <span>Số điện thoại:</span>
+                    <span th:text="${order.recipientPhone}">090...</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Hình thức:</span>
+                    <span th:text="${order.paymentMethod.description}">Tiền mặt</span>
+                </div>
+            </div>
+
+            <div class="receipt-divider"></div>
+
+            <!-- Items Table -->
+            <table class="table table-sm table-borderless small mb-2">
+                <thead>
+                    <tr class="border-bottom text-muted">
+                        <th>Sản phẩm</th>
+                        <th class="text-center" style="width: 40px;">SL</th>
+                        <th class="text-end" style="width: 80px;">Đơn giá</th>
+                        <th class="text-end" style="width: 90px;">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="item : ${order.items}">
+                        <td>
+                            <div class="fw-semibold text-dark" th:text="${item.productName}">Kem chống nắng</div>
+                            <div class="text-muted" style="font-size: 0.7rem;" th:text="${item.skuSnapshot}">SKU</div>
+                        </td>
+                        <td class="text-center align-middle" th:text="${item.quantity}">1</td>
+                        <td class="text-end align-middle" th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</td>
+                        <td class="text-end align-middle fw-bold" th:text="${#numbers.formatDecimal(item.lineTotal, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="receipt-divider"></div>
+
+            <!-- Total Breakdown -->
+            <div class="small">
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-muted">Tổng tiền hàng:</span>
+                    <span th:text="${#numbers.formatDecimal(order.subtotal, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                </div>
+                <div class="d-flex justify-content-between mb-1" th:if="${order.discountAmount.compareTo(T(java.math.BigDecimal).ZERO) > 0}">
+                    <span class="text-muted">Giảm giá:</span>
+                    <span class="text-success" th:text="'- ' + ${#numbers.formatDecimal(order.discountAmount, 0, 'POINT', 0, 'POINT')} + ' ₫'">-0 ₫</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+                    <span class="fw-bold fs-6">TỔNG CỘNG:</span>
+                    <span class="fw-bold fs-5 text-danger" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                </div>
+            </div>
+
+            <div class="receipt-divider"></div>
+
+            <!-- Footer Message -->
+            <div class="text-center text-muted small mt-2" style="page-break-inside: avoid !important; break-inside: avoid !important;">
+                <p class="mb-1 fw-semibold">Cảm ơn quý khách đã mua sắm tại OneShop!</p>
+                <p class="mb-1" style="font-size: 0.75rem;">Mỹ phẩm chính hãng 100% • Đổi trả trong 7 ngày nếu lỗi từ nhà sản xuất</p>
+                <p class="mb-0 text-secondary" style="font-size: 0.7rem;">Website: oneshop.vn</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

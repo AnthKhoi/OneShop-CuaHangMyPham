@@ -1,0 +1,93 @@
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: ${SERVER_ERROR_MESSAGE:never}
+    include-binding-errors: ${SERVER_ERROR_BINDING:never}
+    include-stacktrace: ${SERVER_ERROR_STACKTRACE:never}
+    include-exception: false
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+      force-request: true
+      force-response: true
+
+spring:
+  application:
+    name: oneshop
+  
+  sql:
+    init:
+      mode: never
+  
+  datasource:
+    url: jdbc:sqlserver://${DB_HOST:localhost}:${DB_PORT:1433};databaseName=${DB_NAME:OneShopDB};encrypt=true;trustServerCertificate=${DB_TRUST_SERVER_CERTIFICATE:true};sendStringParametersAsUnicode=true
+    username: ${DB_USERNAME:oneshop_user}
+    password: ${DB_PASSWORD:OneShop@2026#Strong}
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    hikari:
+      maximum-pool-size: 15
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
+
+  jpa:
+    database-platform: org.hibernate.dialect.SQLServerDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          batch_size: 25
+        order_inserts: true
+        order_updates: true
+
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:anhkhoi31082006@gmail.com}
+    password: ${MAIL_PASSWORD:bgyznyvysgjxgbdl}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+  thymeleaf:
+    cache: ${THYMELEAF_CACHE:false}
+    mode: HTML
+    encoding: UTF-8
+    prefix: classpath:/templates/
+    suffix: .html
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+oneshop:
+  jwt:
+    secret: ${JWT_SECRET:c2VjdXJlLW9uZXNob3AtY29zbWV0aWNzLXByZW1pdW0tc2VjcmV0LWtleS0yMDI2LXN0cm9uZw==}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+    cookie-name: ONESHOP_JWT
+    cookie-secure: ${JWT_COOKIE_SECURE:false}
+  
+  cloudinary:
+    cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+    api-key: ${CLOUDINARY_API_KEY:}
+    api-secret: ${CLOUDINARY_API_SECRET:}
+
+logging:
+  level:
+    root: INFO
+    com.oneshop: ${LOG_LEVEL_ONESHOP:INFO}
+    org.hibernate.SQL: ERROR
+    org.springframework.web: WARN
+    org.springframework.security: WARN
+    org.sitemesh: WARN

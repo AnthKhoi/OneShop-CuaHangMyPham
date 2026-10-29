@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bán hàng tại quầy (POS) — OneShop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <style>
+        .pos-container {
+            height: calc(100vh - 85px);
+            overflow: hidden;
+        }
+        .pos-products-col {
+            height: 100%;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        .pos-cart-col {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+        .pos-cart-top {
+            background: #fff;
+        }
+        .pos-cart-items-wrapper {
+            flex: 1 1 0;
+            min-height: 120px;
+            overflow-y: auto;
+            background: #fdfdfd;
+        }
+        .pos-cart-bottom {
+            background: #fff;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.04);
+        }
+        .pos-product-card {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #fff;
+        }
+        .pos-product-card:hover:not(.out-of-stock) {
+            transform: translateY(-2px);
+            border-color: #ef4444;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+        }
+        .pos-product-card.out-of-stock {
+            opacity: 0.55;
+            cursor: not-allowed;
+            background: #f8fafc;
+        }
+        .category-pill {
+            cursor: pointer;
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            transition: all 0.15s ease;
+        }
+        .category-pill.active, .category-pill:hover {
+            background: #ef4444;
+            color: #fff;
+            border-color: #ef4444;
+        }
+        .qty-btn {
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    <!-- Top Navigation Bar for POS -->
+    <header class="bg-white border-bottom py-2 px-4 d-flex justify-content-between align-items-center shadow-sm" style="height: 65px;">
+        <div class="d-flex align-items-center gap-3">
+            <a th:href="@{/admin/orders}" class="btn btn-outline-secondary btn-sm" title="Quay lại danh sách đơn hàng">
+                <i class="bi bi-arrow-left me-1"></i> Đơn hàng
+            </a>
+            <div class="vr"></div>
+            <div>
+                <span class="fw-bold fs-5 text-danger"><i class="bi bi-cart-check-fill me-1"></i> OneShop POS</span>
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-2">Bán lẻ tại quầy</span>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-3">
+            <!-- Active Branch Info -->
+            <div class="d-flex align-items-center gap-2 bg-light px-3 py-1 rounded-pill border">
+                <i class="bi bi-geo-alt-fill text-danger"></i>
+                <span class="fw-bold small" th:text="${currentBranch != null ? currentBranch.name : 'Chưa chọn chi nhánh'}">OneShop Quận 1</span>
+            </div>
+
+            <!-- Branch Switcher for Admin (if multiple branches available) -->
+            <form th:if="${currentUser != null and currentUser.isAdmin() and branches.size() > 1}" th:action="@{/admin/pos}" method="get" class="d-inline">
+                <select name="branchId" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option th:each="b : ${branches}" th:value="${b.id}" th:text="${b.name}" th:selected="${b.id == branchId}">Chi nhánh</option>
+                </select>
+            </form>
+
+            <!-- Staff Name -->
+            <div class="small text-muted">
+                Thu ngân: <strong class="text-dark" th:text="${currentUser != null ? currentUser.fullName : 'Nhân viên'}">Nhân viên</strong>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main POS Interface -->
+    <div class="container-fluid py-3 px-4">
+        <!-- Alert Messages -->
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> <span th:text="${errorMessage}">Lỗi</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> <span th:text="${successMessage}">Thành công</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="row g-3 pos-container">
+            <!-- Left Side: Product Catalog & Search (7 Cols) -->
+            <div class="col-lg-7 pos-products-col">
+                <!-- Search & Filters -->
+                <div class="bg-white p-3 rounded-4 border shadow-sm mb-3">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-7">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                                <input type="text" id="posSearchInput" class="form-control border-start-0 ps-0" 
+                                       placeholder="Tìm mỹ phẩm theo tên hoặc mã SKU..." oninput="filterProducts()">
+                            </div>
+                        </div>
+                        <div class="col-md-5 text-md-end">
+                            <span class="text-muted small">Tổng: <strong id="productCountBadge" th:text="${posProducts.size()}">0</strong> sản phẩm</span>
+                        </div>
+                    </div>
+
+                    <!-- Category Pills -->
+                    <div class="d-flex gap-2 mt-2 overflow-x-auto pb-1" id="categoryPillsList">
+                        <span class="category-pill active" onclick="selectCategory('ALL', this)">Tất cả mỹ phẩm</span>
+                        <span th:each="cat : ${categories}" 
+                              class="category-pill" 
+                              th:attr="data-cat-id=${cat.id}"
+                              th:text="${cat.name}" 
+                              onclick="selectCategory(this.getAttribute('data-cat-id'), this)">
+                            Chăm sóc da
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Products Grid -->
+                <div class="row row-cols-2 row-cols-md-3 row-cols-xl-3 g-3" id="posProductGrid">
+                    <div class="col product-card-col" 
+                         th:each="p : ${posProducts}"
+                         th:attr="data-name=${p.name.toLowerCase()}, data-sku=${p.sku.toLowerCase()}, data-cat=${p.categoryId}">
+                        <div class="pos-product-card p-2 h-100 d-flex flex-column" 
+                             th:classappend="${p.availableStock <= 0} ? 'out-of-stock' : ''"
+                             th:attr="data-id=${p.id}, data-name=${p.name}, data-price=${p.price}, data-sku=${p.sku}, data-img=${p.imageUrl}, data-stock=${p.availableStock}"
+                             onclick="handleProductCardClick(this)">
+                            
+                            <!-- Product Image -->
+                            <div class="position-relative overflow-hidden rounded-3 mb-2 bg-light d-flex align-items-center justify-content-center" style="height: 120px;">
+                                <img th:src="${p.imageUrl}" th:alt="${p.name}" 
+                                     onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&q=80';"
+                                     style="width: 100%; height: 100%; object-fit: cover;">
+                                
+                                <!-- Stock Badge -->
+                                <span th:if="${p.availableStock > 0}" class="badge bg-success-subtle text-success position-absolute bottom-0 start-0 m-1 border border-success-subtle" style="font-size: 0.72rem;">
+                                    Còn <span th:text="${p.availableStock}">0</span> sp
+                                </span>
+                                <span th:if="${p.availableStock <= 0}" class="badge bg-danger position-absolute top-0 start-0 m-1" style="font-size: 0.72rem;">
+                                    Hết hàng
+                                </span>
+                            </div>
+
+                            <!-- Title & SKU -->
+                            <div class="fw-bold small text-dark mb-1" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; min-height: 2.6em;" th:text="${p.name}" th:title="${p.name}">Tên sản phẩm</div>
+                            <div class="text-muted" style="font-size: 0.75rem;" th:text="${'SKU: ' + p.sku}">SKU: ABC</div>
+
+                            <!-- Price & Action -->
+                            <div class="mt-auto pt-2 d-flex justify-content-between align-items-center border-top">
+                                <span class="fw-bold text-danger small" th:text="${#numbers.formatDecimal(p.price, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 0.75rem;" 
+                                        th:disabled="${p.availableStock <= 0}">
+                                    <i class="bi bi-plus-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: In-Store POS Checkout Cart (5 Cols) -->
+            <div class="col-lg-5">
+                <form th:action="@{/admin/pos/checkout}" method="post" id="posCheckoutForm" class="pos-cart-col">
+                    <input type="hidden" name="branchId" th:value="${branchId}">
+
+                    <!-- 1. Top Section (Fixed): Header & Customer Info -->
+                    <div class="pos-cart-top p-3 pb-2 border-bottom flex-shrink-0 bg-white">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-bold m-0 text-danger"><i class="bi bi-basket3-fill me-1"></i> Đơn hàng tại quầy</h6>
+                            <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2" style="font-size: 0.75rem;" onclick="clearCart()">
+                                <i class="bi bi-trash me-1"></i> Xóa giỏ
+                            </button>
+                        </div>
+
+                        <!-- Customer Info (Pinned at Top) -->
+                        <div class="row g-2">
+                            <div class="col-7">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-person"></i></span>
+                                    <input type="text" name="customerName" id="posCustomerNameInput" class="form-control" placeholder="Tên khách hàng...">
+                                </div>
+                            </div>
+                            <div class="col-5">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-telephone"></i></span>
+                                    <input type="tel" name="customerPhone" id="posCustomerPhoneInput" class="form-control" placeholder="Số ĐT..." oninput="handlePhoneLookup()">
+                                </div>
+                            </div>
+                            <div class="col-12" id="customerLookupStatus" style="display: none;"></div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Middle Section (Scrollable): ONLY the Cart Items Table -->
+                    <div class="pos-cart-items-wrapper flex-grow-1 p-2" id="cartItemsContainer" style="overflow-y: auto; min-height: 120px; background: #fdfdfd;">
+                        <!-- Empty State -->
+                        <div id="cartEmptyState" class="text-center py-4 text-muted">
+                            <i class="bi bi-cart-x fs-1 d-block mb-2 text-secondary"></i>
+                            <p class="small m-0">Chưa có sản phẩm nào trong đơn hàng.</p>
+                            <small>Bấm vào mỹ phẩm bên trái để thêm vào quầy thu ngân.</small>
+                        </div>
+
+                        <!-- Rendered Items Table -->
+                        <div id="cartTableWrapper" class="d-none">
+                            <table class="table table-sm align-middle mb-0" style="table-layout: auto;">
+                                <thead class="table-light small" style="position: sticky; top: 0; z-index: 2; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                    <tr>
+                                        <th>Sản phẩm</th>
+                                        <th class="text-center" style="width: 85px;">SL</th>
+                                        <th class="text-end" style="width: 95px;">Tiền</th>
+                                        <th style="width: 25px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cartTableBody">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 3. Bottom Section (Fixed): Payment Method, Totals & Checkout Button -->
+                    <div class="pos-cart-bottom p-3 border-top flex-shrink-0 bg-white">
+                        <!-- Payment Method Radios -->
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <label class="form-label small fw-bold mb-0 text-muted">Thanh toán:</label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check form-check-inline m-0">
+                                    <input class="form-check-input" type="radio" name="paymentMethod" id="pmCash" value="STORE_PAYMENT" checked onchange="handlePaymentMethodChange()">
+                                    <label class="form-check-label small fw-semibold" for="pmCash">💵 Tiền mặt</label>
+                                </div>
+                                <div class="form-check form-check-inline m-0">
+                                    <input class="form-check-input" type="radio" name="paymentMethod" id="pmBank" value="BANK_TRANSFER" onchange="handlePaymentMethodChange()">
+                                    <label class="form-check-label small fw-semibold" for="pmBank">📱 Chuyển khoản QR</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cash Received & Change Calculation -->
+                        <div id="cashCalculationRow" class="row g-2 mb-2 p-2 rounded-2 bg-light border">
+                            <div class="col-6">
+                                <label class="form-label small mb-0 text-muted" style="font-size: 0.75rem;">Tiền khách đưa (₫):</label>
+                                <input type="number" name="amountGivenByCustomer" id="cashGivenInput" class="form-control form-control-sm fw-bold" placeholder="0" oninput="calculateChange()">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small mb-0 text-muted" style="font-size: 0.75rem;">Tiền thối lại:</label>
+                                <div class="form-control form-control-sm bg-white fw-bold text-success border" id="changeAmountDisplay">0 ₫</div>
+                            </div>
+                        </div>
+
+                        <!-- Bank Transfer QR Code Container (Large & Clear) -->
+                        <div id="qrPaymentSection" class="p-2 bg-light rounded-3 border mb-2" style="display: none;">
+                            <div class="row align-items-center g-3 bg-white p-2 rounded-2 border">
+                                <div class="col-auto text-center">
+                                    <div class="position-relative">
+                                        <img id="posQrImg" src="" alt="VietQR" class="border rounded-2 p-1 bg-white shadow-sm" 
+                                             style="width: 175px; height: 175px; object-fit: contain; cursor: pointer;" 
+                                             title="Bấm để xem phóng to mã QR" onclick="toggleQrZoom()">
+                                        <div class="text-muted mt-1 small" style="font-size: 0.72rem; cursor: pointer;" onclick="toggleQrZoom()">
+                                            <i class="bi bi-arrows-fullscreen me-1 text-primary"></i>Phóng to mã QR
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col small">
+                                    <div class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 mb-2 fw-bold" style="font-size: 0.75rem;">
+                                        <i class="bi bi-qr-code-scan me-1"></i> Quét mã VietQR chuyển khoản
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-1" style="font-size: 0.8rem;">
+                                        <span class="text-muted">Ngân hàng:</span>
+                                        <strong class="text-dark">MB Bank</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-1" style="font-size: 0.8rem;">
+                                        <span class="text-muted">Số TK:</span>
+                                        <strong class="text-primary font-monospace fs-6">0349846114</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-1" style="font-size: 0.8rem;">
+                                        <span class="text-muted">Chủ TK:</span>
+                                        <strong class="text-dark">LE HUYNH ANH KHOI</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2" style="font-size: 0.8rem;">
+                                        <span class="text-muted">Số tiền:</span>
+                                        <strong class="text-danger fs-5 text-nowrap" id="qrAmountDisplay">0 ₫</strong>
+                                    </div>
+                                    <button type="button" id="btnConfirmQrPaid" class="btn btn-outline-success btn-sm w-100 fw-bold py-2 shadow-sm" onclick="confirmQrPayment()" style="font-size: 0.8rem;">
+                                        <i class="bi bi-shield-check me-1"></i> Xác nhận đã nhận tiền
+                                    </button>
+                                    <div id="qrConfirmedBadge" class="badge bg-success w-100 py-2 small" style="display: none;">
+                                        <i class="bi bi-check-circle-fill me-1"></i> ĐÃ XÁC NHẬN CHUYỂN KHOẢN!
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Totals Breakdown -->
+                        <div class="d-flex justify-content-between small text-muted mb-1">
+                            <span>Tạm tính tiền hàng:</span>
+                            <span id="subtotalDisplay" class="fw-semibold text-dark text-nowrap">0 ₫</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fs-6 fw-bold">Tổng thanh toán:</span>
+                            <span class="fs-4 fw-bold text-danger text-nowrap" id="totalDisplay">0 ₫</span>
+                        </div>
+
+                        <!-- Submit Checkout Button: Always pinned and 100% visible -->
+                        <button type="submit" id="btnSubmitPos" class="btn btn-danger btn-lg w-100 fw-bold py-2 shadow-sm" disabled>
+                            <i class="bi bi-check2-circle me-1"></i> Hoàn thành thanh toán và xuất hóa đơn
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript POS Logic -->
+    <script>
+        let cart = [];
+        let selectedCategoryId = 'ALL';
+
+        function handleProductCardClick(card) {
+            const stock = parseInt(card.getAttribute('data-stock'), 10) || 0;
+            if (stock <= 0) return;
+            const id = parseInt(card.getAttribute('data-id'), 10);
+            const name = card.getAttribute('data-name');
+            const price = parseFloat(card.getAttribute('data-price')) || 0;
+            const sku = card.getAttribute('data-sku');
+            const img = card.getAttribute('data-img');
+            addToCart(id, name, price, sku, img, stock);
+        }
+
+        function addToCart(productId, name, price, sku, imageUrl, maxStock) {
+            const existing = cart.find(item => item.productId === productId);
+            if (existing) {
+                if (existing.quantity >= maxStock) {
+                    alert('Chi nhánh chỉ còn tối đa ' + maxStock + ' sản phẩm ' + name);
+                    return;
+                }
+                existing.quantity++;
+            } else {
+                cart.push({
+                    productId: productId,
+                    name: name,
+                    price: price,
+                    sku: sku,
+                    imageUrl: imageUrl,
+                    maxStock: maxStock,
+                    quantity: 1
+                });
+            }
+            renderCart();
+        }
+
+        function updateQuantity(productId, delta) {
+            const item = cart.find(i => i.productId === productId);
+            if (!item) return;
+
+            const newQty = item.quantity + delta;
+            if (newQty <= 0) {
+                removeItem(productId);
+                return;
+            }
+            if (newQty > item.maxStock) {
+                alert('Tồn kho chi nhánh chỉ còn tối đa ' + item.maxStock + ' sản phẩm!');
+                return;
+            }
+            item.quantity = newQty;
+            renderCart();
+        }
+
+        function removeItem(productId) {
+            cart = cart.filter(i => i.productId !== productId);
+            renderCart();
+        }
+
+        function clearCart() {
+            if (cart.length > 0 && confirm('Bạn có chắc muốn xóa toàn bộ sản phẩm trong đơn hiện tại?')) {
+                cart = [];
+                renderCart();
+            }
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
+        }
+
+        function renderCart() {
+            const emptyState = document.getElementById('cartEmptyState');
+            const tableWrapper = document.getElementById('cartTableWrapper');
+            const tbody = document.getElementById('cartTableBody');
+            const subtotalDisplay = document.getElementById('subtotalDisplay');
+            const totalDisplay = document.getElementById('totalDisplay');
+            const btnSubmit = document.getElementById('btnSubmitPos');
+
+            tbody.innerHTML = '';
+
+            if (cart.length === 0) {
+                emptyState.classList.remove('d-none');
+                tableWrapper.classList.add('d-none');
+                subtotalDisplay.textContent = '0 ₫';
+                totalDisplay.textContent = '0 ₫';
+                btnSubmit.disabled = true;
+                calculateChange();
+                return;
+            }
+
+            emptyState.classList.add('d-none');
+            tableWrapper.classList.remove('d-none');
+            btnSubmit.disabled = false;
+
+            let subtotal = 0;
+
+            cart.forEach((item, index) => {
+                const lineTotal = item.price * item.quantity;
+                subtotal += lineTotal;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <input type="hidden" name="items[${index}].productId" value="${item.productId}">
+                        <input type="hidden" name="items[${index}].quantity" value="${item.quantity}">
+                        <div class="fw-semibold small text-dark" style="word-break: break-word; line-height: 1.35;" title="${item.name}">${item.name}</div>
+                        <div class="text-muted" style="font-size: 0.7rem;">${formatCurrency(item.price)}</div>
+                    </td>
+                    <td class="text-center">
+                        <div class="d-inline-flex align-items-center gap-1">
+                            <button type="button" class="btn btn-outline-secondary qty-btn" onclick="updateQuantity(${item.productId}, -1)">-</button>
+                            <span class="fw-bold px-1 small">${item.quantity}</span>
+                            <button type="button" class="btn btn-outline-secondary qty-btn" onclick="updateQuantity(${item.productId}, 1)">+</button>
+                        </div>
+                    </td>
+                    <td class="text-end fw-bold text-danger small">${formatCurrency(lineTotal)}</td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-link text-danger p-0" onclick="removeItem(${item.productId})">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            subtotalDisplay.textContent = formatCurrency(subtotal);
+            totalDisplay.textContent = formatCurrency(subtotal);
+            calculateChange();
+            updateQrCode();
+        }
+
+        function calculateChange() {
+            const cashInput = document.getElementById('cashGivenInput');
+            const changeDisplay = document.getElementById('changeAmountDisplay');
+            if (!cashInput || !changeDisplay) return;
+
+            let total = 0;
+            cart.forEach(item => total += (item.price * item.quantity));
+
+            const given = parseFloat(cashInput.value) || 0;
+            if (given >= total && total > 0) {
+                changeDisplay.textContent = formatCurrency(given - total);
+                changeDisplay.className = 'form-control form-control-sm bg-light fw-bold text-success border-0';
+            } else if (given > 0 && given < total) {
+                changeDisplay.textContent = 'Còn thiếu ' + formatCurrency(total - given);
+                changeDisplay.className = 'form-control form-control-sm bg-light fw-bold text-danger border-0';
+            } else {
+                changeDisplay.textContent = '0 ₫';
+                changeDisplay.className = 'form-control form-control-sm bg-light fw-bold text-muted border-0';
+            }
+        }
+
+        let isQrPaymentConfirmed = false;
+
+        function handlePaymentMethodChange() {
+            const isCash = document.getElementById('pmCash').checked;
+            const cashRow = document.getElementById('cashCalculationRow');
+            const qrSection = document.getElementById('qrPaymentSection');
+            if (cashRow) {
+                cashRow.style.display = isCash ? 'flex' : 'none';
+            }
+            if (qrSection) {
+                qrSection.style.display = isCash ? 'none' : 'block';
+            }
+            if (!isCash) {
+                updateQrCode();
+            }
+        }
+
+        function updateQrCode() {
+            let total = 0;
+            cart.forEach(item => total += (item.price * item.quantity));
+
+            const qrImg = document.getElementById('posQrImg');
+            const qrImgZoom = document.getElementById('posQrImgZoom');
+            const qrAmount = document.getElementById('qrAmountDisplay');
+            const qrAmountZoom = document.getElementById('qrAmountDisplayZoom');
+            if (qrAmount) {
+                qrAmount.textContent = formatCurrency(total);
+            }
+            if (qrAmountZoom) {
+                qrAmountZoom.textContent = formatCurrency(total);
+            }
+            if (total > 0) {
+                const qrUrl = `https://img.vietqr.io/image/MB-0349846114-compact2.png?amount=${total}&addInfo=OneShopPOS&accountName=LE%20HUYNH%20ANH%20KHOI`;
+                if (qrImg) qrImg.src = qrUrl;
+                if (qrImgZoom) qrImgZoom.src = qrUrl;
+            }
+        }
+
+        function toggleQrZoom() {
+            updateQrCode();
+            const modalEl = document.getElementById('qrZoomModal');
+            if (modalEl) {
+                const modal = new bootstrap.Modal(modalEl);
+                modal.show();
+            }
+        }
+
+        function confirmQrPayment() {
+            isQrPaymentConfirmed = true;
+            const btn = document.getElementById('btnConfirmQrPaid');
+            const badge = document.getElementById('qrConfirmedBadge');
+            if (btn) btn.style.display = 'none';
+            if (badge) badge.style.display = 'block';
+        }
+
+        let phoneLookupTimeout = null;
+        function handlePhoneLookup() {
+            clearTimeout(phoneLookupTimeout);
+            const phoneInput = document.getElementById('posCustomerPhoneInput');
+            const nameInput = document.getElementById('posCustomerNameInput');
+            const statusDiv = document.getElementById('customerLookupStatus');
+            if (!phoneInput || !statusDiv) return;
+
+            const phone = phoneInput.value.trim();
+            if (phone.length < 9) {
+                statusDiv.style.display = 'none';
+                return;
+            }
+
+            phoneLookupTimeout = setTimeout(() => {
+                fetch('/admin/pos/customer-lookup?phone=' + encodeURIComponent(phone))
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.found) {
+                            if (!nameInput.value.trim()) {
+                                nameInput.value = data.fullName;
+                            }
+                            const escapeHtml = (str) => {
+                                const p = document.createElement('p');
+                                p.textContent = str || '';
+                                return p.innerHTML;
+                            };
+                            const safeName = escapeHtml(data.fullName);
+                            const safeEmail = escapeHtml(data.email);
+                            statusDiv.innerHTML = `<span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-person-check-fill me-1"></i> Thành viên OneShop: <strong>${safeName}</strong> (${safeEmail}) — Đơn sẽ lưu vào tài khoản</span>`;
+                            statusDiv.style.display = 'block';
+                        } else {
+                            statusDiv.innerHTML = `<span class="text-muted small"><i class="bi bi-info-circle me-1"></i> Chưa có tài khoản (Khách lẻ)</span>`;
+                            statusDiv.style.display = 'block';
+                        }
+                    })
+                    .catch(() => {
+                        statusDiv.style.display = 'none';
+                    });
+            }, 300);
+        }
+
+        document.getElementById('posCheckoutForm').addEventListener('submit', function(e) {
+            const isBank = document.getElementById('pmBank').checked;
+            if (isBank && !isQrPaymentConfirmed) {
+                if (confirm('Bạn đã nhận được tiền chuyển khoản ngân hàng từ khách hàng chưa?\n\nBấm OK để xác nhận đã nhận tiền và xuất hóa đơn ngay.')) {
+                    confirmQrPayment();
+                    return true;
+                } else {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        });
+
+        function selectCategory(catId, pillElement) {
+            selectedCategoryId = catId;
+            document.querySelectorAll('#categoryPillsList .category-pill').forEach(el => el.classList.remove('active'));
+            if (pillElement) pillElement.classList.add('active');
+            filterProducts();
+        }
+
+        function filterProducts() {
+            const query = (document.getElementById('posSearchInput').value || '').trim().toLowerCase();
+            const cards = document.querySelectorAll('.product-card-col');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name') || '';
+                const sku = card.getAttribute('data-sku') || '';
+                const cat = card.getAttribute('data-cat') || '';
+
+                const matchesQuery = !query || name.includes(query) || sku.includes(query);
+                const matchesCat = (selectedCategoryId === 'ALL') || (cat === selectedCategoryId);
+
+                if (matchesQuery && matchesCat) {
+                    card.classList.remove('d-none');
+                    visibleCount++;
+                } else {
+                    card.classList.add('d-none');
+                }
+            });
+
+            document.getElementById('productCountBadge').textContent = visibleCount;
+        }
+    </script>
+
+    <!-- Modal Phóng to mã QR VietQR -->
+    <div class="modal fade" id="qrZoomModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+            <div class="modal-content text-center p-3 rounded-4 shadow border-0">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="fw-bold m-0 text-primary"><i class="bi bi-qr-code-scan me-1"></i> Quét mã VietQR chuyển khoản</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="d-flex justify-content-center my-2 p-2 bg-light rounded-3">
+                    <img id="posQrImgZoom" src="" alt="VietQR" class="border rounded-3 p-2 bg-white shadow-sm" style="width: 290px; height: 290px; object-fit: contain;">
+                </div>
+                <div class="fw-bold fs-4 text-danger my-1 text-nowrap" id="qrAmountDisplayZoom">0 ₫</div>
+                <div class="small text-muted mb-3">MB Bank • <strong>0349846114</strong> • LE HUYNH ANH KHOI</div>
+                <button type="button" class="btn btn-secondary w-100 fw-bold" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

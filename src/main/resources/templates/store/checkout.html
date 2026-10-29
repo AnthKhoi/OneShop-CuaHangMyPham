@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Thanh Toán Đơn Hàng — OneShop</title>
+    <style>
+        .os-fulfillment-btn {
+            background: #FFFFFF;
+            border: 2px solid #E5E7EB;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .os-fulfillment-btn:hover {
+            border-color: #F43F5E;
+            background: #FFFBFD;
+        }
+        .btn-check:checked + .os-fulfillment-btn {
+            background: #FFF1F5 !important;
+            border: 2px solid var(--os-primary, #E11D48) !important;
+            box-shadow: 0 4px 14px rgba(225, 29, 72, 0.12);
+        }
+        .btn-check:checked + .os-fulfillment-btn .os-btn-title {
+            color: var(--os-primary, #E11D48) !important;
+        }
+        .btn-check:checked + .os-fulfillment-btn .os-btn-sub {
+            color: #4B5563 !important;
+        }
+    </style>
+</head>
+<body>
+<div class="container py-4">
+    <h3 class="fw-bold mb-4"><i class="bi bi-credit-card-2-front text-danger me-2"></i>Thanh toán đơn hàng</h3>
+
+    <form id="couponApplyForm" th:action="@{/cart/apply-coupon}" method="post">
+        <input type="hidden" name="redirect" value="/checkout">
+    </form>
+    <form id="couponRemoveForm" th:action="@{/cart/remove-coupon}" method="post">
+        <input type="hidden" name="redirect" value="/checkout">
+    </form>
+
+    <form th:action="@{/checkout}" th:object="${checkoutForm}" method="post" accept-charset="UTF-8">
+        <input type="hidden" name="shippingRegion" id="shippingRegionHidden" th:field="*{shippingRegion}">
+
+        <div class="row g-4">
+            <!-- Left Column: Fulfillment & Customer Address -->
+            <div class="col-lg-7">
+                <!-- Fulfillment Type Choice -->
+                <div class="bg-white p-4 rounded-4 border shadow-sm mb-4">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-box-seam text-danger me-2"></i>1. Phương thức nhận hàng</h5>
+
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <input type="radio" class="btn-check" name="fulfillmentType" id="typeDelivery" value="DELIVERY" 
+                                   th:field="*{fulfillmentType}" onchange="toggleFulfillmentType()">
+                            <label class="os-fulfillment-btn p-3 w-100 text-start rounded-3 h-100 d-block" for="typeDelivery">
+                                <div class="fw-bold fs-6 mb-1 text-dark os-btn-title">
+                                    <i class="bi bi-truck me-2 text-danger"></i> Giao hàng tận nơi
+                                </div>
+                                <small class="text-secondary d-block os-btn-sub">Nội thành TP.HCM miễn phí 100%. Toàn quốc miễn phí từ 500k</small>
+                            </label>
+                        </div>
+                        <div class="col-sm-6">
+                            <input type="radio" class="btn-check" name="fulfillmentType" id="typePickup" value="PICKUP" 
+                                   th:field="*{fulfillmentType}" onchange="toggleFulfillmentType()">
+                            <label class="os-fulfillment-btn p-3 w-100 text-start rounded-3 h-100 d-block" for="typePickup">
+                                <div class="fw-bold fs-6 mb-1 text-dark os-btn-title">
+                                    <i class="bi bi-shop me-2 text-danger"></i> Nhận tại cửa hàng
+                                </div>
+                                <small class="text-secondary d-block os-btn-sub">Đến trực tiếp chi nhánh nhận hàng, không tốn phí ship</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Select Branch (Core Chain Feature) -->
+                <div class="bg-white p-4 rounded-4 border shadow-sm mb-4">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-geo-alt-fill text-danger me-2"></i>2. Chọn chi nhánh xử lý đơn hàng</h5>
+                    <p class="text-muted small">Đơn hàng của bạn sẽ được chuẩn bị và đóng gói từ kho của chi nhánh được chọn.</p>
+
+                    <div class="mb-3">
+                        <select class="form-select form-select-lg" th:field="*{branchId}" required>
+                            <option th:each="b : ${branches}" th:value="${b.id}" th:text="${b.name + ' — ' + b.address}">
+                                OneShop Chi nhánh
+                            </option>
+                        </select>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('branchId')}" th:errors="*{branchId}"></div>
+                    </div>
+                </div>
+
+                <!-- Recipient Info & Address -->
+                <div class="bg-white p-4 rounded-4 border shadow-sm mb-4">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-person-lines-fill text-danger me-2"></i>3. Thông tin người nhận</h5>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Họ và tên người nhận <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" th:field="*{recipientName}" placeholder="Nguyễn Văn A" required>
+                            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('recipientName')}" th:errors="*{recipientName}"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Số điện thoại <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" th:field="*{recipientPhone}" placeholder="0901234567" required>
+                            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('recipientPhone')}" th:errors="*{recipientPhone}"></div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Địa chỉ Email (để nhận hóa đơn)</label>
+                            <input type="email" class="form-control" th:field="*{recipientEmail}" placeholder="email@example.com">
+                        </div>
+
+                        <!-- Address Group (Displayed only when DELIVERY is chosen) -->
+                        <div class="col-12" id="addressGroup">
+                            <label class="form-label small fw-bold">Địa chỉ nhận hàng (Số nhà, đường, phường, quận/huyện) <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" th:field="*{shippingAddress}" id="shippingAddressInput" 
+                                   placeholder="Ví dụ: 45 Lê Lợi, P. Bến Nghé, Quận 1, TP. HCM" oninput="toggleFulfillmentType()">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Ghi chú đơn hàng</label>
+                            <textarea class="form-control" rows="2" th:field="*{note}" placeholder="Ví dụ: Giao vào giờ hành chính, gọi trước khi giao..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="bg-white p-4 rounded-4 border shadow-sm mb-4">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-wallet2 text-danger me-2"></i>4. Phương thức thanh toán</h5>
+
+                    <!-- COD (Available only for DELIVERY) -->
+                    <div class="form-check p-3 border rounded-3 mb-2" id="payCodGroup">
+                        <input class="form-check-input ms-0 me-3" type="radio" name="paymentMethod" id="payCod" value="COD" th:field="*{paymentMethod}">
+                        <label class="form-check-label fw-bold" for="payCod">
+                            <i class="bi bi-cash-coin me-1 text-success"></i> Thanh toán tiền mặt khi nhận hàng (COD)
+                            <small class="d-block text-muted fw-normal">Quý khách nhận hàng, kiểm tra và thanh toán cho shipper.</small>
+                        </label>
+                    </div>
+
+                    <!-- Bank Transfer QR (Always Available) -->
+                    <div class="form-check p-3 border rounded-3 mb-2" id="payBankGroup">
+                        <input class="form-check-input ms-0 me-3" type="radio" name="paymentMethod" id="payBank" value="BANK_TRANSFER" th:field="*{paymentMethod}">
+                        <label class="form-check-label fw-bold" for="payBank">
+                            <i class="bi bi-qr-code-scan me-1 text-primary"></i> Chuyển khoản ngân hàng qua mã QR (VietQR)
+                            <small class="d-block text-muted fw-normal">Quét mã VietQR chuyển khoản nhanh 24/7 sau khi đặt hàng.</small>
+                        </label>
+                    </div>
+
+                    <!-- Store Payment (Available only for PICKUP) -->
+                    <div class="form-check p-3 border rounded-3" id="payStoreGroup">
+                        <input class="form-check-input ms-0 me-3" type="radio" name="paymentMethod" id="payStore" value="STORE_PAYMENT" th:field="*{paymentMethod}">
+                        <label class="form-check-label fw-bold" for="payStore">
+                            <i class="bi bi-shop me-1 text-danger"></i> Thanh toán tại quầy OneShop
+                            <small class="d-block text-muted fw-normal">Thanh toán trực tiếp bằng tiền mặt hoặc thẻ POS tại chi nhánh khi đến nhận hàng.</small>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Order Summary & Placement -->
+            <div class="col-lg-5">
+                <div class="bg-white p-4 rounded-4 border shadow-sm sticky-top" style="top: 90px;">
+                    <h5 class="fw-bold mb-3">Đơn hàng của bạn (<span th:text="${cart.items.size()}">0</span> món)</h5>
+
+                    <!-- Items snapshot -->
+                    <div class="border-bottom pb-3 mb-3" style="max-height: 280px; overflow-y: auto;">
+                        <div class="d-flex align-items-center gap-3 mb-3" th:each="item : ${cart.items}">
+                            <img th:src="${item.imageUrl}" th:alt="${item.productName}" 
+                                 onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&q=80';"
+                                 class="rounded-3 border" style="width: 52px; height: 52px; object-fit: cover;">
+                            <div class="flex-grow-1">
+                                <div class="fw-bold small text-truncate" style="max-width: 220px;" th:text="${item.productName}">Tên sản phẩm</div>
+                                <div class="small text-muted">SL: <span th:text="${item.quantity}">1</span> x <span class="text-nowrap" th:text="${#numbers.formatDecimal(item.price, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</span></div>
+                            </div>
+                            <div class="fw-bold text-danger small text-nowrap ms-2" th:text="${#numbers.formatDecimal(item.getLineTotal(), 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</div>
+                        </div>
+                    </div>
+
+                    <!-- Voucher / Coupon Box -->
+                    <div class="mb-3 pb-3 border-bottom">
+                        <div class="small fw-bold mb-2 text-dark"><i class="bi bi-ticket-perforated text-danger me-1"></i>Mã giảm giá / Voucher:</div>
+                        <div th:if="${cart.couponCode != null}" class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-0">
+                            <div>
+                                <strong th:text="${cart.couponCode}">WELCOME50</strong>
+                                <small class="d-block text-muted">Đã giảm <span th:text="${#numbers.formatDecimal(cart.discountAmount, 0, 'POINT', 0, 'POINT')} + ' ₫'"></span></small>
+                            </div>
+                            <button type="submit" form="couponRemoveForm" class="btn btn-sm btn-outline-danger py-0 px-2">Gỡ</button>
+                        </div>
+                        <div th:unless="${cart.couponCode != null}">
+                            <div class="input-group">
+                                <input type="text" name="couponCode" form="couponApplyForm" class="form-control form-control-sm text-uppercase" placeholder="Mã giảm (vd: WELCOME50)" required>
+                                <button type="submit" form="couponApplyForm" class="btn btn-sm btn-dark">Áp dụng</button>
+                            </div>
+                            <div class="form-text text-muted" style="font-size: 0.75rem;">
+                                Gợi ý: <span class="badge bg-light text-dark border">WELCOME50</span> (-50k), <span class="badge bg-light text-dark border">ONESHOP10</span> (-10%)
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Price Calculation -->
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Tạm tính hàng:</span>
+                        <strong class="text-nowrap" id="subtotalDisplay" th:data-val="${cart.getSubtotal()}" th:text="${#numbers.formatDecimal(cart.getSubtotal(), 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2" th:if="${cart.discountAmount.compareTo(T(java.math.BigDecimal).ZERO) > 0}">
+                        <span class="text-muted">Mã giảm (<span th:text="${cart.couponCode}"></span>):</span>
+                        <strong class="text-success text-nowrap" id="discountDisplay" th:data-val="${cart.discountAmount}" th:text="'- ' + ${#numbers.formatDecimal(cart.discountAmount, 0, 'POINT', 0, 'POINT')} + ' ₫'">-0 ₫</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Phí giao hàng:</span>
+                        <span id="shippingFeeBadge" class="fw-bold text-success text-nowrap">MIỄN PHÍ</span>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="fs-5 fw-bold">Tổng thanh toán:</span>
+                        <span class="fs-3 fw-bold text-danger text-nowrap ms-2" id="totalAmountDisplay">0 ₫</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-os-primary btn-lg w-100 py-3 fw-bold">
+                        <i class="bi bi-check2-circle me-1"></i> Xác nhận đặt hàng
+                    </button>
+
+                    <div class="mt-3 text-center small text-muted">
+                        Bằng việc bấm Đặt hàng, quý khách đồng ý với Điều khoản dịch vụ và chính sách của chuỗi cửa hàng OneShop.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    function toggleFulfillmentType() {
+        const isPickup = document.getElementById('typePickup').checked;
+        const addressGroup = document.getElementById('addressGroup');
+        const shippingInput = document.getElementById('shippingAddressInput');
+        const shippingHint = document.getElementById('shippingPolicyHint');
+        const regionHidden = document.getElementById('shippingRegionHidden');
+        const payCodGroup = document.getElementById('payCodGroup');
+        const payStoreGroup = document.getElementById('payStoreGroup');
+        const payCod = document.getElementById('payCod');
+        const payStore = document.getElementById('payStore');
+        const shippingBadge = document.getElementById('shippingFeeBadge');
+        const totalDisplay = document.getElementById('totalAmountDisplay');
+
+        const subtotalEl = document.getElementById('subtotalDisplay');
+        const discountEl = document.getElementById('discountDisplay');
+        const subtotal = subtotalEl ? parseFloat(subtotalEl.getAttribute('data-val')) || 0 : 0;
+        const discount = discountEl ? parseFloat(discountEl.getAttribute('data-val')) || 0 : 0;
+
+        let shippingFee = 0;
+
+        if (isPickup) {
+            // Khi nhận tại cửa hàng:
+            if (addressGroup) addressGroup.style.display = 'none';
+            if (shippingInput) shippingInput.removeAttribute('required');
+
+            if (payCodGroup) payCodGroup.style.display = 'none';
+            if (payStoreGroup) payStoreGroup.style.display = 'block';
+
+            if (payCod && payCod.checked) {
+                if (payStore) payStore.checked = true;
+            }
+
+            shippingFee = 0;
+            if (shippingBadge) {
+                shippingBadge.textContent = 'MIỄN PHÍ (Nhận tại quầy)';
+                shippingBadge.className = 'fw-bold text-success';
+            }
+            if (regionHidden) regionHidden.value = 'INNER_CITY';
+        } else {
+            // Khi giao tận nơi:
+            if (addressGroup) addressGroup.style.display = 'block';
+            if (shippingInput) shippingInput.setAttribute('required', 'required');
+
+            if (payCodGroup) payCodGroup.style.display = 'block';
+            if (payStoreGroup) payStoreGroup.style.display = 'none';
+
+            if (payStore && payStore.checked) {
+                if (payCod) payCod.checked = true;
+            }
+
+            // Phân tích địa chỉ nhận hàng để xác định chính xác phí vận chuyển
+            const rawAddr = (shippingInput && shippingInput.value) ? shippingInput.value.trim().toLowerCase() : '';
+            const cleanAddr = rawAddr.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+
+            // 5 Huyện Ngoại thành TP.HCM: Củ Chi, Hóc Môn, Bình Chánh, Nhà Bè, Cần Giờ
+            const isOuterCity = /\b(cu\s*chi|hoc\s*mon|binh\s*chanh|nha\s*be|can\s*gio)\b/i.test(cleanAddr);
+
+            // Tất cả quận Nội thành TP.HCM (Quận 1 đến 12, Bình Tân, Bình Thạnh, Gò Vấp, Phú Nhuận, Tân Bình, Tân Phú, Thủ Đức)
+            const isInnerCity = /\b(quan\s*1\b|q\s*1\b|q\.1\b|quan\s*2\b|q\s*2\b|q\.2\b|quan\s*3\b|q\s*3\b|q\.3\b|quan\s*4\b|q\s*4\b|q\.4\b|quan\s*5\b|q\s*5\b|q\.5\b|quan\s*6\b|q\s*6\b|q\.6\b|quan\s*7\b|q\s*7\b|q\.7\b|quan\s*8\b|q\s*8\b|q\.8\b|quan\s*9\b|q\s*9\b|q\.9\b|quan\s*10\b|q\s*10\b|q\.10\b|quan\s*11\b|q\s*11\b|q\.11\b|quan\s*12\b|q\s*12\b|q\.12\b|thu\s*duc|binh\s*tan|binh\s*thanh|go\s*vap|phu\s*nhuan|tan\s*binh|tan\s*phu)\b/i.test(cleanAddr) 
+                                || rawAddr.includes('bến nghé') || rawAddr.includes('thảo điền') || rawAddr.includes('an phú') || rawAddr.includes('bình tân')
+                                || rawAddr.includes('quận 2') || rawAddr.includes('quận 9') || rawAddr.includes('quận 12')
+                                || rawAddr.includes('hồ chí minh') || rawAddr.includes('tp.hcm') || rawAddr.includes('tphcm') || rawAddr.includes('sài gòn');
+
+            if (!rawAddr) {
+                // Chưa nhập địa chỉ: mặc định hiển thị chính sách nội thành
+                shippingFee = 0;
+                if (shippingBadge) {
+                    shippingBadge.textContent = 'MIỄN PHÍ';
+                    shippingBadge.className = 'fw-bold text-success';
+                }
+                if (shippingHint) {
+                    shippingHint.textContent = '💡 Vui lòng nhập địa chỉ nhận hàng để hệ thống tính phí chính xác.';
+                    shippingHint.className = 'small mt-1 text-muted';
+                }
+                if (regionHidden) regionHidden.value = 'INNER_CITY';
+            } else if (isOuterCity) {
+                // Ngoại thành TP.HCM (5 huyện) -> 25k (miễn phí từ 500k)
+                if (subtotal >= 500000) {
+                    shippingFee = 0;
+                    if (shippingBadge) {
+                        shippingBadge.textContent = 'MIỄN PHÍ (Đơn ≥ 500k)';
+                        shippingBadge.className = 'fw-bold text-success';
+                    }
+                } else {
+                    shippingFee = 25000;
+                    if (shippingBadge) {
+                        shippingBadge.textContent = '25.000 ₫';
+                        shippingBadge.className = 'fw-bold text-dark';
+                    }
+                }
+                if (shippingHint) {
+                    shippingHint.innerHTML = '<i class="bi bi-info-circle-fill me-1"></i>Địa chỉ thuộc <strong>Ngoại thành TP. Hồ Chí Minh</strong> (Phí ship 25.000₫, miễn phí từ 500k).';
+                    shippingHint.className = 'small mt-1 text-primary';
+                }
+                if (regionHidden) regionHidden.value = 'OUTER_CITY';
+            } else if (isInnerCity) {
+                // Nội thành TP.HCM (Bình Tân, Quận 2, Quận 9, Quận 12, Thủ Đức...) -> MIỄN PHÍ 100%
+                shippingFee = 0;
+                if (shippingBadge) {
+                    shippingBadge.textContent = 'MIỄN PHÍ (Nội thành)';
+                    shippingBadge.className = 'fw-bold text-success';
+                }
+                if (shippingHint) {
+                    shippingHint.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>Địa chỉ thuộc <strong>Nội thành TP. Hồ Chí Minh</strong> (Bình Tân, Q.1, Q.2, Q.9, Thủ Đức...) — Quý khách được <strong>MIỄN PHÍ VẬN CHUYỂN (0₫)</strong>!';
+                    shippingHint.className = 'small mt-1 text-success fw-bold';
+                }
+                if (regionHidden) regionHidden.value = 'INNER_CITY';
+            } else {
+                // Tỉnh thành khác toàn quốc -> 35k (miễn phí từ 500k)
+                if (subtotal >= 500000) {
+                    shippingFee = 0;
+                    if (shippingBadge) {
+                        shippingBadge.textContent = 'MIỄN PHÍ (Đơn ≥ 500k)';
+                        shippingBadge.className = 'fw-bold text-success';
+                    }
+                } else {
+                    shippingFee = 35000;
+                    if (shippingBadge) {
+                        shippingBadge.textContent = '35.000 ₫';
+                        shippingBadge.className = 'fw-bold text-dark';
+                    }
+                }
+                if (shippingHint) {
+                    shippingHint.innerHTML = '<i class="bi bi-geo-alt-fill me-1"></i>Giao hàng toàn quốc (Phí ship 35.000₫, miễn phí cho đơn từ 500k).';
+                    shippingHint.className = 'small mt-1 text-secondary';
+                }
+                if (regionHidden) regionHidden.value = 'PROVINCE';
+            }
+        }
+
+        const totalAmount = Math.max(0, subtotal - discount + shippingFee);
+        if (totalDisplay) {
+            totalDisplay.textContent = new Intl.NumberFormat('vi-VN').format(totalAmount) + ' ₫';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleFulfillmentType();
+    });
+    toggleFulfillmentType();
+</script>
+</body>
+</html>

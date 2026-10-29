@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Danh Sách Mỹ Phẩm — OneShop</title>
+</head>
+<body>
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a th:href="@{/}" class="text-decoration-none">Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Danh mục sản phẩm</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- Sidebar Filters -->
+        <div class="col-lg-3">
+            <div class="os-filter-box">
+                <form th:action="@{/products}" method="get" id="filterForm">
+                    <input type="hidden" name="keyword" th:value="${keyword}">
+                    <input type="hidden" name="sort" th:value="${selectedSort}">
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fw-bold"><i class="bi bi-funnel me-1"></i> BỘ LỌC</span>
+                        <a th:href="@{/products}" class="small text-danger text-decoration-none">Đặt lại</a>
+                    </div>
+
+                    <!-- Category Filter -->
+                    <div class="mb-4">
+                        <div class="os-filter-title">Danh mục</div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="category" id="catAll" value="" th:checked="${selectedCategory == null}" onchange="selectCategoryFilter('')">
+                            <label class="form-check-label small" for="catAll">Tất cả danh mục</label>
+                        </div>
+                        <div class="form-check mb-2" th:each="cat : ${categories}">
+                            <input class="form-check-input" type="radio" name="category" th:id="'cat_' + ${cat.id}" th:value="${cat.id}" th:checked="${selectedCategory == cat.id}" th:onchange="'selectCategoryFilter(' + ${cat.id} + ')'">
+                            <label class="form-check-label small" th:for="'cat_' + ${cat.id}" th:text="${cat.name}">Category</label>
+                        </div>
+                    </div>
+
+                    <!-- Brand Filter -->
+                    <div class="mb-4">
+                        <div class="os-filter-title">Thương hiệu</div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="brand" id="brandAll" value="" th:checked="${selectedBrand == null}" onchange="selectBrandFilter('')">
+                            <label class="form-check-label small" for="brandAll">Tất cả thương hiệu</label>
+                        </div>
+                        <div class="form-check mb-2" th:each="b : ${brands}">
+                            <input class="form-check-input" type="radio" name="brand" th:id="'brand_' + ${b.id}" th:value="${b.id}" th:checked="${selectedBrand == b.id}" th:onchange="'selectBrandFilter(' + ${b.id} + ')'">
+                            <label class="form-check-label small" th:for="'brand_' + ${b.id}" th:text="${b.name}">Brand</label>
+                        </div>
+                    </div>
+
+                    <!-- Dual-Handle Price Range Filter -->
+                    <div class="mb-4">
+                        <div class="os-filter-title">Khoảng giá (VNĐ)</div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="small text-muted">Khoảng chọn:</span>
+                                <span class="fw-bold text-danger" id="priceDisplay" style="font-size: 0.95rem;">0 ₫ – 3.000.000 ₫</span>
+                            </div>
+
+                            <!-- 2-Thumb Slider Wrapper -->
+                            <div class="os-dual-range-wrapper">
+                                <div class="os-range-track"></div>
+                                <div class="os-range-selected" id="rangeSelectedTrack"></div>
+                                <input type="range" class="os-dual-range" id="minRangeSlider" min="0" max="3000000" step="20000" 
+                                       th:value="${minPrice != null ? minPrice : 0}" 
+                                       oninput="updateDualSlider('min')">
+                                <input type="range" class="os-dual-range" id="maxRangeSlider" min="0" max="3000000" step="20000" 
+                                       th:value="${maxPrice != null ? maxPrice : 3000000}" 
+                                       oninput="updateDualSlider('max')">
+                            </div>
+
+                            <div class="d-flex justify-content-between small text-muted" style="font-size: 0.75rem;">
+                                <span>0 ₫</span>
+                                <span>1.500.000 ₫</span>
+                                <span>3.000.000 ₫</span>
+                            </div>
+                            <input type="hidden" name="minPrice" id="minPriceInput" th:value="${minPrice != null ? minPrice : 0}">
+                            <input type="hidden" name="maxPrice" id="maxPriceInput" th:value="${maxPrice != null ? maxPrice : 3000000}">
+                        </div>
+
+                        <!-- Quick Presets -->
+                        <div class="d-flex flex-wrap gap-1 mb-3">
+                            <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 0.75rem;" onclick="setPricePreset(0, 300000)">Dưới 300k</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 0.75rem;" onclick="setPricePreset(200000, 300000)">200k - 300k</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 0.75rem;" onclick="setPricePreset(300000, 700000)">300k - 700k</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 0.75rem;" onclick="setPricePreset(700000, 1500000)">700k - 1.5Tr</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 0.75rem;" onclick="setPricePreset(0, 3000000)">Tất cả</button>
+                        </div>
+
+                        <button type="submit" class="btn btn-os-primary btn-sm w-100 fw-bold">
+                            <i class="bi bi-funnel me-1"></i> Áp dụng giá lọc
+                        </button>
+                    </div>
+                </form>
+
+                <script>
+                    const minSlider = document.getElementById('minRangeSlider');
+                    const maxSlider = document.getElementById('maxRangeSlider');
+                    const minInput = document.getElementById('minPriceInput');
+                    const maxInput = document.getElementById('maxPriceInput');
+                    const display = document.getElementById('priceDisplay');
+                    const selectedTrack = document.getElementById('rangeSelectedTrack');
+                    const maxLimit = 3000000;
+                    const stepSize = 20000;
+
+                    function updateDualSlider(trigger) {
+                        if (!minSlider || !maxSlider) return;
+                        let minVal = parseInt(minSlider.value) || 0;
+                        let maxVal = parseInt(maxSlider.value) || maxLimit;
+
+                        if (trigger === 'min' && minVal > maxVal - stepSize) {
+                            minVal = Math.max(0, maxVal - stepSize);
+                            minSlider.value = minVal;
+                        } else if (trigger === 'max' && maxVal < minVal + stepSize) {
+                            maxVal = Math.min(maxLimit, minVal + stepSize);
+                            maxSlider.value = maxVal;
+                        }
+
+                        if (minInput) minInput.value = minVal;
+                        if (maxInput) maxInput.value = maxVal;
+
+                        const fmtMin = new Intl.NumberFormat('vi-VN').format(minVal) + ' ₫';
+                        const fmtMax = new Intl.NumberFormat('vi-VN').format(maxVal) + ' ₫';
+                        if (display) display.textContent = fmtMin + ' – ' + fmtMax;
+
+                        if (selectedTrack) {
+                            const minPercent = (minVal / maxLimit) * 100;
+                            const maxPercent = (maxVal / maxLimit) * 100;
+                            selectedTrack.style.left = minPercent + '%';
+                            selectedTrack.style.width = Math.max(0, maxPercent - minPercent) + '%';
+                        }
+                    }
+
+                    function setPricePreset(min, max) {
+                        if (minSlider) minSlider.value = min;
+                        if (maxSlider) maxSlider.value = max;
+                        updateDualSlider('none');
+                        const form = document.querySelector('.os-filter-box form');
+                        if (form) form.submit();
+                    }
+
+                    function selectCategoryFilter(catId) {
+                        const brandAll = document.getElementById('brandAll');
+                        if (brandAll) brandAll.checked = true;
+                        const kw = document.querySelector('input[name="keyword"]');
+                        if (kw) kw.value = '';
+                        document.getElementById('filterForm').submit();
+                    }
+
+                    function selectBrandFilter(brandId) {
+                        const catAll = document.getElementById('catAll');
+                        if (catAll) catAll.checked = true;
+                        const kw = document.querySelector('input[name="keyword"]');
+                        if (kw) kw.value = '';
+                        document.getElementById('filterForm').submit();
+                    }
+
+                    document.addEventListener('DOMContentLoaded', function() {
+                        updateDualSlider('none');
+                    });
+                    updateDualSlider('none');
+                </script>
+            </div>
+        </div>
+
+        <!-- Product Listing Content -->
+        <div class="col-lg-9">
+            <!-- Header Bar -->
+            <div class="bg-white p-3 rounded-3 border d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 shadow-sm">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <span class="text-muted small">Hiển thị <strong class="text-dark" th:text="${productPage.totalElements}">0</strong> sản phẩm mỹ phẩm</span>
+
+                    <span th:if="${keyword}" class="badge bg-danger text-white py-1 px-2 d-inline-flex align-items-center gap-1">
+                        Từ khóa: "<span th:text="${keyword}"></span>"
+                        <a th:href="@{/products(category=${selectedCategory}, brand=${selectedBrand}, minPrice=${minPrice}, maxPrice=${maxPrice}, sort=${selectedSort})}" class="text-white text-decoration-none fw-bold ms-1" title="Bỏ lọc">&times;</a>
+                    </span>
+
+                    <th:block th:if="${selectedCategory != null}">
+                        <span th:each="cat : ${categories}" th:if="${cat.id == selectedCategory}" class="badge bg-primary text-white py-1 px-2 d-inline-flex align-items-center gap-1">
+                            Danh mục: <span th:text="${cat.name}"></span>
+                            <a th:href="@{/products(keyword=${keyword}, brand=${selectedBrand}, minPrice=${minPrice}, maxPrice=${maxPrice}, sort=${selectedSort})}" class="text-white text-decoration-none fw-bold ms-1" title="Bỏ lọc">&times;</a>
+                        </span>
+                    </th:block>
+
+                    <th:block th:if="${selectedBrand != null}">
+                        <span th:each="b : ${brands}" th:if="${b.id == selectedBrand}" class="badge bg-dark text-white py-1 px-2 d-inline-flex align-items-center gap-1">
+                            Thương hiệu: <span th:text="${b.name}"></span>
+                            <a th:href="@{/products(keyword=${keyword}, category=${selectedCategory}, minPrice=${minPrice}, maxPrice=${maxPrice}, sort=${selectedSort})}" class="text-white text-decoration-none fw-bold ms-1" title="Bỏ lọc">&times;</a>
+                        </span>
+                    </th:block>
+
+                    <a th:if="${keyword != null or selectedCategory != null or selectedBrand != null or minPrice != null or maxPrice != null}" th:href="@{/products}" class="small text-danger fw-semibold text-decoration-none ms-2">
+                        <i class="bi bi-x-circle me-1"></i>Xóa bộ lọc
+                    </a>
+                </div>
+
+                <!-- Sort Control -->
+                <div class="d-flex align-items-center gap-2">
+                    <label class="small text-muted text-nowrap">Sắp xếp theo:</label>
+                    <select class="form-select form-select-sm" style="width: 170px;" onchange="location = this.value;">
+                        <option th:value="@{/products(keyword=${keyword}, category=${selectedCategory}, brand=${selectedBrand}, minPrice=${minPrice}, maxPrice=${maxPrice}, sort='newest')}" th:selected="${selectedSort == 'newest'}">Mới nhất</option>
+                        <option th:value="@{/products(keyword=${keyword}, category=${selectedCategory}, brand=${selectedBrand}, minPrice=${minPrice}, maxPrice=${maxPrice}, sort='price_asc')}" th:selected="${selectedSort == 'price_asc'}">Giá tăng dần</option>
+                        <option th:value="@{/products(keyword=${keyword}, category=${selectedCategory}, brand=${selectedBrand}, minPrice=${minPrice}, maxPrice=${maxPrice}, sort='price_desc')}" th:selected="${selectedSort == 'price_desc'}">Giá giảm dần</option>
+                        <option th:value="@{/products(keyword=${keyword}, category=${selectedCategory}, brand=${selectedBrand}, minPrice=${minPrice}, maxPrice=${maxPrice}, sort='name_asc')}" th:selected="${selectedSort == 'name_asc'}">Tên A-Z</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Product Grid -->
+            <div class="row g-4" th:if="${not #lists.isEmpty(products)}">
+                <div class="col-6 col-md-4" th:each="product : ${products}">
+                    <div class="os-card">
+                        <div class="os-card-img-wrap">
+                            <a th:href="@{'/products/' + ${product.slug}}">
+                                <img th:src="${product.primaryImageUrl}" th:alt="${product.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&q=80';">
+                            </a>
+                            <span th:if="${product.hasDiscount()}" class="os-badge-discount" th:text="'-' + ${product.getDiscountPercentage()} + '%'">-15%</span>
+                        </div>
+                        <div class="os-card-body">
+                            <div class="os-card-brand" th:text="${product.brand.name}">Brand</div>
+                            <a th:href="@{'/products/' + ${product.slug}}" class="os-card-title" th:text="${product.name}">Tên sản phẩm</a>
+                            
+                            <div class="d-flex align-items-center justify-content-between my-1 text-muted" style="font-size: 0.8rem;">
+                                <!-- Rating: only show star if reviewCount > 0 -->
+                                <div th:if="${reviewCountMap != null and reviewCountMap[product.id] != null and reviewCountMap[product.id] > 0}" class="d-flex align-items-center gap-1 text-warning">
+                                    <i class="bi bi-star-fill"></i>
+                                    <span class="text-dark fw-semibold" th:text="${avgRatingMap[product.id]}">5.0</span>
+                                    <span class="text-muted">([[${reviewCountMap[product.id]}]] đánh giá)</span>
+                                </div>
+                                <div th:unless="${reviewCountMap != null and reviewCountMap[product.id] != null and reviewCountMap[product.id] > 0}" class="text-muted">
+                                    <span>0 đánh giá</span>
+                                </div>
+
+                                <!-- Sold Count -->
+                                <div class="text-muted">
+                                    <span>Đã bán </span>
+                                    <strong class="text-dark" th:text="${soldMap != null and soldMap[product.id] != null ? soldMap[product.id] : 0}">0</strong>
+                                </div>
+                            </div>
+
+                            <div class="os-card-price">
+                                <span class="os-current-price" th:text="${#numbers.formatDecimal(product.price, 0, 'POINT', 0, 'POINT')} + ' ₫'">420.000 ₫</span>
+                                <span th:if="${product.hasDiscount()}" class="os-original-price" th:text="${#numbers.formatDecimal(product.compareAtPrice, 0, 'POINT', 0, 'POINT')} + ' ₫'">495.000 ₫</span>
+                            </div>
+
+                            <div class="mt-3 d-flex gap-2">
+                                <a th:href="@{'/products/' + ${product.slug}}" class="btn btn-outline-secondary btn-sm flex-grow-1">Xem chi tiết</a>
+                                <form th:action="@{/cart/add}" method="post">
+                                    <input type="hidden" name="productId" th:value="${product.id}">
+                                    <input type="hidden" name="quantity" value="1">
+                                    <button type="submit" class="btn btn-os-primary btn-sm px-3" title="Thêm vào giỏ">
+                                        <i class="bi bi-cart-plus"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="text-center py-5 bg-white rounded-3 border" th:if="${#lists.isEmpty(products)}">
+                <i class="bi bi-search text-muted fs-1 mb-3 d-block"></i>
+                <h5 class="fw-bold">Không tìm thấy sản phẩm phù hợp</h5>
+                <p class="text-muted mb-3">Vui lòng thử điều chỉnh lại bộ lọc hoặc tìm kiếm từ khóa khác.</p>
+                <a th:href="@{/products}" class="btn btn-os-primary btn-sm">Xem tất cả sản phẩm</a>
+            </div>
+
+            <!-- Pagination -->
+            <nav class="mt-4" th:if="${productPage.totalPages > 1}">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${productPage.first ? 'disabled' : ''}">
+                        <a class="page-link" th:href="@{/products(keyword=${keyword}, category=${selectedCategory}, brand=${selectedBrand}, minPrice=${minPrice}, maxPrice=${maxPrice}, sort=${selectedSort}, page=${productPage.number - 1})}">&laquo;</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, productPage.totalPages - 1)}" th:classappend="${productPage.number == i ? 'active' : ''}">
+                        <a class="page-link" th:href="@{/products(keyword=${keyword}, category=${selectedCategory}, brand=${selectedBrand}, minPrice=${minPrice}, maxPrice=${maxPrice}, sort=${selectedSort}, page=${i})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${productPage.last ? 'disabled' : ''}">
+                        <a class="page-link" th:href="@{/products(keyword=${keyword}, category=${selectedCategory}, brand=${selectedBrand}, minPrice=${minPrice}, maxPrice=${maxPrice}, sort=${selectedSort}, page=${productPage.number + 1})}">&raquo;</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<footer class="os-footer" th:fragment="footer" id="stores">
+    <div class="container">
+        <!-- Top Footer: Brand, Stores, Policies, Support -->
+        <div class="row g-4 pb-4">
+            <!-- Brand & Philosophy -->
+            <div class="col-lg-4 col-md-12">
+                <a class="os-brand text-light mb-3" th:href="@{/}">
+                    <i class="bi bi-stars"></i> OneShop
+                    <span class="badge-tag">BEAUTY</span>
+                </a>
+                <p class="text-secondary mt-3 pe-lg-4" style="line-height: 1.7;">
+                    Hệ thống bán lẻ mỹ phẩm chính hãng hàng đầu, mang đến vẻ đẹp rạng ngời và sự tự tin cho phái đẹp với 100% sản phẩm cao cấp, chính ngạch và dịch vụ tư vấn tận tâm.
+                </p>
+                
+                <!-- Social Channels -->
+                <div class="mt-4">
+                    <h6 class="text-white-50 text-uppercase small fw-bold mb-3" style="letter-spacing: 1px;">Kết nối cùng OneShop</h6>
+                    <div class="d-flex gap-2">
+                        <a href="https://www.facebook.com/profile.php?id=61588386782421" target="_blank" rel="noopener noreferrer" class="btn btn-outline-light btn-sm rounded-circle p-2 d-inline-flex align-items-center justify-content-center" style="width: 38px; height: 38px;" title="Facebook">
+                            <i class="bi bi-facebook"></i>
+                        </a>
+                        <a href="https://www.instagram.com/oneshop.beautyy/" target="_blank" rel="noopener noreferrer" class="btn btn-outline-light btn-sm rounded-circle p-2 d-inline-flex align-items-center justify-content-center" style="width: 38px; height: 38px;" title="Instagram">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                        <a href="https://www.tiktok.com/@oneshop.beauty" target="_blank" rel="noopener noreferrer" class="btn btn-outline-light btn-sm rounded-circle p-2 d-inline-flex align-items-center justify-content-center" style="width: 38px; height: 38px;" title="TikTok">
+                            <i class="bi bi-tiktok"></i>
+                        </a>
+                        <a href="https://www.youtube.com/@oneshop.beauty" target="_blank" rel="noopener noreferrer" class="btn btn-outline-light btn-sm rounded-circle p-2 d-inline-flex align-items-center justify-content-center" style="width: 38px; height: 38px;" title="YouTube">
+                            <i class="bi bi-youtube"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Branch Stores & Direct Hotlines -->
+            <div class="col-lg-4 col-md-6">
+                <h5 class="text-white fw-bold mb-3"><i class="bi bi-geo-alt-fill text-danger me-2"></i>Hệ thống Cửa hàng OneShop</h5>
+                <div class="d-flex flex-column gap-3">
+                    <!-- Chi nhánh Quận 1 -->
+                    <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08);">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold text-white"><i class="bi bi-shop text-warning me-1"></i> OneShop Quận 1</span>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">Mở cửa</span>
+                        </div>
+                        <p class="text-secondary small mb-2">
+                            <i class="bi bi-geo-alt me-1"></i> 120 Hai Bà Trưng, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh
+                        </p>
+                        <div class="d-flex align-items-center justify-content-between pt-1 border-top border-secondary border-opacity-25">
+                            <small class="text-white-50"><i class="bi bi-clock me-1"></i> 08:30 - 22:00 hàng ngày</small>
+                            <a href="tel:0349846114" class="btn btn-sm btn-outline-danger py-0 px-2 fw-semibold">
+                                <i class="bi bi-telephone-fill me-1"></i> 0349846114
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Chi nhánh Thủ Đức -->
+                    <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08);">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold text-white"><i class="bi bi-shop text-warning me-1"></i> OneShop Thủ Đức</span>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">Mở cửa</span>
+                        </div>
+                        <p class="text-secondary small mb-2">
+                            <i class="bi bi-geo-alt me-1"></i> 216 Võ Văn Ngân, Phường Linh Chiểu, TP. Thủ Đức, TP. Hồ Chí Minh
+                        </p>
+                        <div class="d-flex align-items-center justify-content-between pt-1 border-top border-secondary border-opacity-25">
+                            <small class="text-white-50"><i class="bi bi-clock me-1"></i> 08:30 - 22:00 hàng ngày</small>
+                            <a href="tel:0369815844" class="btn btn-sm btn-outline-danger py-0 px-2 fw-semibold">
+                                <i class="bi bi-telephone-fill me-1"></i> 0369815844
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Service & Policies -->
+            <div class="col-lg-2 col-sm-6">
+                <h5 class="text-white fw-bold mb-3"><i class="bi bi-shield-check text-primary me-2"></i>Chính sách</h5>
+                <ul class="list-unstyled text-secondary" style="line-height: 2;">
+                    <li><a th:href="@{/policy/return}" class="text-secondary text-decoration-none hover-white"><i class="bi bi-chevron-right small text-muted me-1"></i> Đổi trả 7 ngày</a></li>
+                    <li><a th:href="@{/policy/shipping}" class="text-secondary text-decoration-none hover-white"><i class="bi bi-chevron-right small text-muted me-1"></i> Vận chuyển & Giao hàng</a></li>
+                    <li><a th:href="@{/policy/payment}" class="text-secondary text-decoration-none hover-white"><i class="bi bi-chevron-right small text-muted me-1"></i> Hình thức thanh toán</a></li>
+                    <li><a th:href="@{/policy/privacy}" class="text-secondary text-decoration-none hover-white"><i class="bi bi-chevron-right small text-muted me-1"></i> Chính sách bảo mật</a></li>
+                    <li><a th:href="@{/policy/terms}" class="text-secondary text-decoration-none hover-white"><i class="bi bi-chevron-right small text-muted me-1"></i> Điều khoản dịch vụ</a></li>
+                </ul>
+            </div>
+
+            <!-- Quick Contacts & Support -->
+            <div class="col-lg-2 col-sm-6">
+                <h5 class="text-white fw-bold mb-3"><i class="bi bi-headset text-danger me-2"></i>Tổng đài hỗ trợ</h5>
+                <div class="mb-3">
+                    <span class="text-white-50 small d-block">Hotline Quận 1:</span>
+                    <a href="tel:0349846114" class="text-danger fw-bold text-decoration-none fs-6">
+                        <i class="bi bi-telephone-outbound-fill me-1"></i> 0349846114
+                    </a>
+                </div>
+                <div class="mb-3">
+                    <span class="text-white-50 small d-block">Hotline Thủ Đức:</span>
+                    <a href="tel:0369815844" class="text-danger fw-bold text-decoration-none fs-6">
+                        <i class="bi bi-telephone-outbound-fill me-1"></i> 0369815844
+                    </a>
+                </div>
+                <div class="mb-3">
+                    <span class="text-white-50 small d-block">Hộp thư CSKH:</span>
+                    <a href="mailto:support@oneshop.vn" class="text-secondary text-decoration-none small">
+                        <i class="bi bi-envelope me-1"></i> support@oneshop.vn
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trust Features Strip -->
+        <div class="py-3 my-2 border-top border-bottom border-secondary border-opacity-25">
+            <div class="row g-3 text-center text-md-start">
+                <div class="col-6 col-md-3 d-flex align-items-center justify-content-center justify-content-md-start gap-2">
+                    <i class="bi bi-patch-check-fill text-danger fs-4"></i>
+                    <div>
+                        <div class="text-white fw-bold small">100% Chính Hãng</div>
+                        <small class="text-white-50">Tem phụ & hóa đơn rõ ràng</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 d-flex align-items-center justify-content-center justify-content-md-start gap-2">
+                    <i class="bi bi-truck text-warning fs-4"></i>
+                    <div>
+                        <div class="text-white fw-bold small">Freeship Nội Thành</div>
+                        <small class="text-white-50">Áp dụng đơn nội ô Q1 & Thủ Đức</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 d-flex align-items-center justify-content-center justify-content-md-start gap-2">
+                    <i class="bi bi-arrow-repeat text-success fs-4"></i>
+                    <div>
+                        <div class="text-white fw-bold small">Đổi Trả Dễ Dàng</div>
+                        <small class="text-white-50">Trong vòng 7 ngày miễn phí</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 d-flex align-items-center justify-content-center justify-content-md-start gap-2">
+                    <i class="bi bi-headset text-info fs-4"></i>
+                    <div>
+                        <div class="text-white fw-bold small">Tư Vấn Chuyên Sâu</div>
+                        <small class="text-white-50">Hỗ trợ làm đẹp 24/7</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Copyright -->
+        <div class="os-footer-bottom d-flex flex-column flex-md-row justify-content-between align-items-center py-3 gap-2">
+            <div class="fw-semibold text-light">
+                Copyright © OneShopBEAUTY – All rights reserved
+            </div>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

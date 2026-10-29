@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>OneShop — Mỹ Phẩm & Chăm Sóc Sắc Đẹp Chính Hãng</title>
+</head>
+<body>
+<div class="container pb-5">
+    <!-- Hero Banner -->
+    <div class="os-hero">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <h1 class="mb-3">Tỏa sáng rạng ngời <br>cùng vẻ đẹp nguyên bản</h1>
+                <p class="lead text-muted mb-4">
+                    Khám phá hơn 1.000+ sản phẩm chăm sóc da, son môi và trang điểm chính hãng từ các thương hiệu hàng đầu thế giới với ưu đãi độc quyền.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a th:href="@{/products}" class="btn btn-os-primary btn-lg px-4">
+                        <i class="bi bi-bag-heart me-1"></i> Khám phá ngay
+                    </a>
+                    <button type="button" class="btn btn-outline-dark btn-lg px-4" id="btnGpsStoreFinder" onclick="openGpsStoreModal()">
+                        <i class="bi bi-geo-alt-fill text-danger me-1"></i> Tìm cửa hàng gần bạn
+                    </button>
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="os-hero-slider-wrap rounded-4 shadow-sm overflow-hidden" id="heroCosmeticsShowcase" style="height: 380px; position: relative;">
+                    <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=800&q=80" alt="Bộ cọ trang điểm & kẻ mắt" class="os-showcase-slide active">
+                    <img src="https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=800&q=80" alt="Cọ kẻ mắt & chuốt mi" class="os-showcase-slide">
+                    <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=800&q=80" alt="Son môi cao cấp" class="os-showcase-slide">
+                    <img src="https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=800&q=80" alt="Serum dưỡng da" class="os-showcase-slide">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Showcase Pills -->
+    <div class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="fw-bold m-0"><i class="bi bi-grid-fill text-danger me-2"></i>Danh mục nổi bật</h3>
+            <a th:href="@{/products}" class="text-decoration-none fw-semibold text-danger">Xem tất cả &raquo;</a>
+        </div>
+        <div class="row g-3">
+            <div class="col-6 col-md-4 col-lg-2" th:each="cat : ${categories}">
+                <a th:href="@{/products(category=${cat.id})}" class="os-cat-pill text-center flex-column p-3 h-100">
+                    <img th:src="${cat.imageUrl}" th:alt="${cat.name}" class="mb-2 shadow-sm">
+                    <span class="small fw-bold" th:text="${cat.name}">Danh mục</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ⚡ FLASH DEAL 2-HOUR ROTATING SECTION -->
+    <div class="os-flash-section mb-5" th:if="${flashDealProducts != null and !flashDealProducts.isEmpty()}">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <span class="os-flash-badge">
+                    <i class="bi bi-lightning-charge-fill text-warning me-1"></i>FLASH DEAL
+                </span>
+                <div>
+                    <h3 class="fw-bold m-0 text-dark d-flex align-items-center gap-2">
+                        <span>Deal Chớp Nhoáng</span>
+                        <span class="badge bg-warning text-dark fs-6 fw-bold px-2 py-1 rounded-pill" th:text="${flashDealTimeRange}">00:00 - 02:00</span>
+                    </h3>
+                </div>
+            </div>
+
+            <!-- Countdown Timer -->
+            <div class="d-flex align-items-center gap-2 bg-white px-3 py-2 rounded-4 shadow-sm border border-danger-subtle">
+                <span class="small fw-bold text-danger d-flex align-items-center gap-1">
+                    <i class="bi bi-alarm-fill"></i> KẾT THÚC TRONG:
+                </span>
+                <div class="os-flash-countdown d-flex align-items-center gap-1">
+                    <span class="os-time-box" id="flashHours">00</span>
+                    <span class="os-time-sep">:</span>
+                    <span class="os-time-box" id="flashMinutes">00</span>
+                    <span class="os-time-sep">:</span>
+                    <span class="os-time-box" id="flashSeconds">00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flash Deal Products Grid -->
+        <div class="row g-4">
+            <div class="col-6 col-md-4 col-lg-3" th:each="product : ${flashDealProducts}">
+                <div class="os-card border-danger-subtle shadow-sm">
+                    <div class="os-card-img-wrap">
+                        <a th:href="@{'/products/' + ${product.slug}}">
+                            <img th:src="${product.primaryImageUrl}" th:alt="${product.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&q=80';">
+                        </a>
+                        <span class="os-badge-flash"><i class="bi bi-lightning-fill"></i> FLASH DEAL</span>
+                        <span th:if="${product.hasDiscount()}" class="os-badge-discount" th:text="'-' + ${product.getDiscountPercentage()} + '%'">-15%</span>
+                    </div>
+                    <div class="os-card-body">
+                        <div class="os-card-brand" th:text="${product.brand.name}">Brand</div>
+                        <a th:href="@{'/products/' + ${product.slug}}" class="os-card-title fw-bold" th:text="${product.name}">Tên sản phẩm</a>
+                        
+                        <!-- Shopee-style Flash Deal Progress Bar -->
+                        <div class="os-flash-progress-wrap my-2">
+                            <div class="os-flash-progress-bar" style="width: 78%;"></div>
+                            <span class="os-flash-progress-text">
+                                <i class="bi bi-fire text-warning me-1"></i>ĐÃ BÁN <span th:text="${soldMap != null and soldMap[product.id] != null ? soldMap[product.id] : 2}">2</span> SP
+                            </span>
+                        </div>
+
+                        <!-- Rating & Review Count -->
+                        <div class="d-flex align-items-center justify-content-between my-1 text-muted" style="font-size: 0.8rem;">
+                            <div th:if="${reviewCountMap != null and reviewCountMap[product.id] != null and reviewCountMap[product.id] > 0}" class="d-flex align-items-center gap-1 text-warning">
+                                <i class="bi bi-star-fill"></i>
+                                <span class="text-dark fw-semibold" th:text="${avgRatingMap[product.id]}">5.0</span>
+                                <span class="text-muted">([[${reviewCountMap[product.id]}]] đánh giá)</span>
+                            </div>
+                            <div th:unless="${reviewCountMap != null and reviewCountMap[product.id] != null and reviewCountMap[product.id] > 0}" class="text-muted">
+                                <span>0 đánh giá</span>
+                            </div>
+                            <span class="badge bg-danger-subtle text-danger fw-semibold">Ưu đãi sốc</span>
+                        </div>
+
+                        <div class="os-card-price">
+                            <span class="os-current-price text-danger fs-5" th:text="${#numbers.formatDecimal(product.price, 0, 'POINT', 0, 'POINT')} + ' ₫'">420.000 ₫</span>
+                            <span th:if="${product.hasDiscount()}" class="os-original-price" th:text="${#numbers.formatDecimal(product.compareAtPrice, 0, 'POINT', 0, 'POINT')} + ' ₫'">495.000 ₫</span>
+                        </div>
+
+                        <div class="mt-3 d-flex gap-2">
+                            <a th:href="@{'/products/' + ${product.slug}}" class="btn btn-outline-danger btn-sm flex-grow-1 fw-semibold">Săn deal ngay</a>
+                            <form th:if="${currentUser == null or !currentUser.isAdmin()}" th:action="@{/cart/add}" method="post">
+                                <input type="hidden" name="productId" th:value="${product.id}">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="btn btn-danger btn-sm px-3 shadow-sm" title="Thêm vào giỏ">
+                                    <i class="bi bi-cart-plus"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✨ GỢI Ý HÔM NAY SECTION (CURATED RECOMMENDATIONS) -->
+    <div class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <span class="badge mb-1 text-white fw-bold px-3 py-1 rounded-pill" style="background: linear-gradient(135deg, #7928CA 0%, #FF0080 100%);">
+                    <i class="bi bi-stars me-1"></i>DÀNH CHO BẠN
+                </span>
+                <h3 class="fw-bold m-0 text-dark">Gợi ý hôm nay</h3>
+            </div>
+            <a th:href="@{/products}" class="btn btn-os-outline btn-sm">Xem tất cả sản phẩm &raquo;</a>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-6 col-md-4 col-lg-3" th:each="product : ${dailyRecommendations}">
+                <div class="os-card">
+                    <div class="os-card-img-wrap">
+                        <a th:href="@{'/products/' + ${product.slug}}">
+                            <img th:src="${product.primaryImageUrl}" th:alt="${product.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&q=80';">
+                        </a>
+                        <span class="os-badge-recommend"><i class="bi bi-heart-fill me-1"></i> Gợi ý</span>
+                        <span th:if="${product.hasDiscount()}" class="os-badge-discount" th:text="'-' + ${product.getDiscountPercentage()} + '%'">-15%</span>
+                    </div>
+                    <div class="os-card-body">
+                        <div class="os-card-brand" th:text="${product.brand.name}">Brand</div>
+                        <a th:href="@{'/products/' + ${product.slug}}" class="os-card-title" th:text="${product.name}">Tên sản phẩm</a>
+                        
+                        <div class="d-flex align-items-center justify-content-between my-1 text-muted" style="font-size: 0.8rem;">
+                            <!-- Rating: only show star if reviewCount > 0 -->
+                            <div th:if="${reviewCountMap != null and reviewCountMap[product.id] != null and reviewCountMap[product.id] > 0}" class="d-flex align-items-center gap-1 text-warning">
+                                <i class="bi bi-star-fill"></i>
+                                <span class="text-dark fw-semibold" th:text="${avgRatingMap[product.id]}">5.0</span>
+                                <span class="text-muted">([[${reviewCountMap[product.id]}]] đánh giá)</span>
+                            </div>
+                            <div th:unless="${reviewCountMap != null and reviewCountMap[product.id] != null and reviewCountMap[product.id] > 0}" class="text-muted">
+                                <span>0 đánh giá</span>
+                            </div>
+
+                            <!-- Sold Count -->
+                            <div class="text-muted">
+                                <span>Đã bán </span>
+                                <strong class="text-dark" th:text="${soldMap != null and soldMap[product.id] != null ? soldMap[product.id] : 0}">0</strong>
+                            </div>
+                        </div>
+
+                        <div class="os-card-price">
+                            <span class="os-current-price" th:text="${#numbers.formatDecimal(product.price, 0, 'POINT', 0, 'POINT')} + ' ₫'">420.000 ₫</span>
+                            <span th:if="${product.hasDiscount()}" class="os-original-price" th:text="${#numbers.formatDecimal(product.compareAtPrice, 0, 'POINT', 0, 'POINT')} + ' ₫'">495.000 ₫</span>
+                        </div>
+
+                        <div class="mt-3 d-flex gap-2">
+                            <a th:href="@{'/products/' + ${product.slug}}" class="btn btn-outline-secondary btn-sm flex-grow-1">Chi tiết</a>
+                            <form th:if="${currentUser == null or !currentUser.isAdmin()}" th:action="@{/cart/add}" method="post">
+                                <input type="hidden" name="productId" th:value="${product.id}">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="btn btn-os-primary btn-sm px-3" title="Thêm vào giỏ">
+                                    <i class="bi bi-cart-plus"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GPS Store Finder Modal -->
+    <div class="modal fade" id="gpsStoreModal" tabindex="-1" aria-labelledby="gpsStoreModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-0 pb-0">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="bg-danger-subtle text-danger rounded-circle p-2 d-inline-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                            <i class="bi bi-geo-alt-fill fs-5"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold" id="gpsStoreModalLabel">Tìm Cửa Hàng OneShop Gần Bạn Nhất</h5>
+                            <small class="text-muted">Định vị GPS tự động tính khoảng cách và chỉ đường chính xác</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Locating / Radar State -->
+                    <div id="gpsLocatingState" class="text-center py-4">
+                        <div class="os-gps-radar">
+                            <i class="bi bi-broadcast text-danger fs-2"></i>
+                        </div>
+                        <h6 class="fw-bold mb-1">Đang kết nối GPS định vị tọa độ...</h6>
+                        <p class="text-muted small mb-3">Vui lòng chọn <strong>"Cho phép" (Allow)</strong> nếu trình duyệt hỏi quyền truy cập vị trí</p>
+                        <div class="spinner-border spinner-border-sm text-danger" role="status">
+                            <span class="visually-hidden">Đang tìm kiếm...</span>
+                        </div>
+                    </div>
+
+                    <!-- Location Results State -->
+                    <div id="gpsResultsState" class="d-none">
+                        <div class="alert alert-success d-flex align-items-center gap-2 mb-3 rounded-3 border-0 bg-success-subtle text-success-emphasis" id="gpsSummaryAlert">
+                            <i class="bi bi-check-circle-fill fs-5"></i>
+                            <div>
+                                <span class="fw-bold" id="gpsNearestTitle">Đã tìm thấy cửa hàng OneShop gần bạn nhất!</span>
+                                <div class="small text-secondary" id="gpsNearestSubtitle">Khoảng cách được tính toán chính xác theo tọa độ GPS thời gian thực.</div>
+                            </div>
+                        </div>
+
+                        <!-- Branches List Sorted by Distance -->
+                        <div class="row g-3" id="gpsBranchesList"></div>
+                    </div>
+
+                    <!-- GPS Denied / Error Fallback State -->
+                    <div id="gpsErrorState" class="d-none">
+                        <div class="alert alert-warning d-flex align-items-center gap-2 mb-3 rounded-3">
+                            <i class="bi bi-exclamation-triangle-fill fs-5 text-warning flex-shrink-0"></i>
+                            <div class="small">
+                                <strong class="d-block" id="gpsErrorMessage">Không thể tự động lấy tọa độ GPS từ trình duyệt.</strong>
+                                Quý khách có thể xem thông tin 2 cửa hàng OneShop bên dưới hoặc mở Google Maps để chỉ đường trực tiếp!
+                            </div>
+                        </div>
+                        <div class="row g-3" id="gpsFallbackList"></div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0 px-4 pb-4 d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" onclick="requestUserGpsLocation()">
+                        <i class="bi bi-arrow-clockwise me-1"></i> Định vị lại
+                    </button>
+                    <button type="button" class="btn btn-light btn-sm rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flash Deal 2-Hour Live Countdown Script -->
+    <script>
+        (function() {
+            function updateFlashDealCountdown() {
+                const now = new Date();
+                const currentHour = now.getHours();
+                // Every 2 hours (0, 2, 4, ..., 22): the next slot ends at the next even hour
+                const nextSlotHour = (Math.floor(currentHour / 2) + 1) * 2;
+                const target = new Date(now);
+                if (nextSlotHour === 24) {
+                    target.setHours(24, 0, 0, 0);
+                } else {
+                    target.setHours(nextSlotHour, 0, 0, 0);
+                }
+
+                let diff = Math.max(0, Math.floor((target.getTime() - now.getTime()) / 1000));
+                if (diff === 0) {
+                    setTimeout(function() { window.location.reload(); }, 1500);
+                }
+
+                const hours = Math.floor(diff / 3600);
+                diff %= 3600;
+                const minutes = Math.floor(diff / 60);
+                const seconds = diff % 60;
+
+                const hEl = document.getElementById('flashHours');
+                const mEl = document.getElementById('flashMinutes');
+                const sEl = document.getElementById('flashSeconds');
+                if (hEl) hEl.textContent = String(hours).padStart(2, '0');
+                if (mEl) mEl.textContent = String(minutes).padStart(2, '0');
+                if (sEl) sEl.textContent = String(seconds).padStart(2, '0');
+            }
+
+            updateFlashDealCountdown();
+            setInterval(updateFlashDealCountdown, 1000);
+        })();
+    </script>
+</div>
+</body>
+</html>

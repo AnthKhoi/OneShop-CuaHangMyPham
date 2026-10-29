@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><sitemesh:write property="title">OneShop - Hệ thống mỹ phẩm chính hãng</sitemesh:write></title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom OneShop Stylesheet -->
+    <link rel="stylesheet" th:href="@{/css/oneshop.css}">
+
+    <!-- Page Specific Head Injections -->
+    <sitemesh:write property="head"/>
+</head>
+<body>
+    <!-- Global Header -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <!-- Global Alert Notifications -->
+    <div class="container mt-2">
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+    </div>
+
+    <!-- Main View Body Injected by SiteMesh -->
+    <main>
+        <sitemesh:write property="body"/>
+    </main>
+
+    <!-- Global Footer -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <!-- AI Beauty Advisor Chatbox -->
+    <div th:replace="~{fragments/ai-chatbox :: ai-chatbox}"></div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom Scripts -->
+    <script th:src="@{/js/oneshop.js}"></script>
+</body>
+</html>

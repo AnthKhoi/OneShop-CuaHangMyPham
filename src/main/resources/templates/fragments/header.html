@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<header th:fragment="header">
+    <!-- Top Announcement Bar -->
+    <div class="os-topbar py-1">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <span><i class="bi bi-truck me-1"></i> Miễn phí giao hàng nội thành (Quận 1 & Thủ Đức)</span>
+                <span class="d-none d-md-inline text-secondary">|</span>
+                <span class="d-none d-md-inline"><i class="bi bi-shield-check me-1"></i> Cam kết 100% chính hãng</span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="d-none d-sm-inline">
+                    <i class="bi bi-telephone-fill me-1"></i> Hotline Q.1: <a href="tel:0349846114" class="text-white text-decoration-none fw-bold me-2">0349846114</a>
+                    • Thủ Đức: <a href="tel:0369815844" class="text-white text-decoration-none fw-bold">0369815844</a>
+                </span>
+                <span class="text-secondary">|</span>
+                <a href="#stores" class="text-light text-decoration-none" onclick="if(window.openGpsStoreModal){ openGpsStoreModal(); }"><i class="bi bi-geo-alt-fill me-1"></i> 2 Cửa hàng OneShop</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Navigation Bar -->
+    <nav class="navbar navbar-expand-lg os-navbar">
+        <div class="container">
+            <!-- Brand Logo -->
+            <a class="navbar-brand os-brand me-4" th:href="@{/}">
+                <i class="bi bi-stars"></i> OneShop
+                <span class="badge-tag">BEAUTY</span>
+            </a>
+
+            <!-- Mobile Toggle -->
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Navbar Links & Search -->
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <!-- Navigation menu -->
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center">
+                    <li class="nav-item">
+                        <a class="nav-link-custom" th:href="@{/}">Trang chủ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link-custom" th:href="@{/products}">Sản phẩm</a>
+                    </li>
+
+                    <!-- Categories Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link-custom dropdown-toggle" href="#" id="categoryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Danh mục mỹ phẩm
+                        </a>
+                        <ul class="dropdown-menu shadow-sm border-0 py-2" aria-labelledby="categoryDropdown">
+                            <li th:each="cat : ${globalCategories}">
+                                <a class="dropdown-item py-2" th:href="@{/products(category=${cat.id})}">
+                                    <i class="bi bi-arrow-right-short text-muted me-1"></i>
+                                    <span th:text="${cat.name}">Chăm sóc da mặt</span>
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item py-2 fw-semibold text-danger" th:href="@{/products}">Tất cả danh mục &raquo;</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Brands Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link-custom dropdown-toggle" href="#" id="brandDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Thương hiệu
+                        </a>
+                        <ul class="dropdown-menu shadow-sm border-0 py-2" aria-labelledby="brandDropdown" style="max-height: 380px; overflow-y: auto; min-width: 220px;">
+                            <li th:each="b : ${globalBrands}">
+                                <a class="dropdown-item py-2 d-flex align-items-center justify-content-between" th:href="@{/products(brand=${b.id})}">
+                                    <span th:text="${b.name}">La Roche-Posay</span>
+                                    <i class="bi bi-chevron-right text-muted small"></i>
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item py-2 fw-semibold text-danger" th:href="@{/products}">Xem tất cả sản phẩm &raquo;</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Branches Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link-custom dropdown-toggle" href="#" id="branchDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-shop me-1 text-danger"></i> Chi nhánh
+                        </a>
+                        <ul class="dropdown-menu shadow-sm border-0 py-2" aria-labelledby="branchDropdown" style="min-width: 280px;">
+                            <li th:each="b : ${globalBranches}">
+                                <a class="dropdown-item py-2" th:href="@{/products}">
+                                    <strong class="d-block" th:text="${b.name}">OneShop Quận 1</strong>
+                                    <small class="text-muted" th:text="${b.address}">120 Hai Bà Trưng</small>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <!-- Search Input -->
+                <form class="d-flex my-2 my-lg-0 me-3 flex-grow-1" style="max-width: 320px;" th:action="@{/search}" method="get">
+                    <input class="form-control os-search-input" type="search" name="q" placeholder="Tìm serum, son môi, kem..." aria-label="Search" required>
+                    <button class="os-search-btn" type="submit"><i class="bi bi-search"></i></button>
+                </form>
+
+                <!-- Actions: Cart & User Account -->
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Wishlist Button -->
+                    <a th:href="@{/wishlist}" class="os-icon-btn position-relative" title="Sản phẩm yêu thích">
+                        <i class="bi bi-heart fs-5 text-danger"></i>
+                        <span class="os-badge-count bg-danger" id="globalWishlistBadge" th:if="${globalWishlistCount > 0}" th:text="${globalWishlistCount}">0</span>
+                    </a>
+
+                    <!-- Cart Button (Customer only - not for Admin) -->
+                    <a th:if="${currentUser == null or !currentUser.isAdmin()}" th:href="@{/cart}" class="os-icon-btn" title="Giỏ hàng">
+                        <i class="bi bi-bag-heart-fill fs-5"></i>
+                        <span class="os-badge-count" th:text="${globalCartCount}">0</span>
+                    </a>
+
+                    <!-- Shipper Shortcut Button -->
+                    <a th:if="${currentUser != null and currentUser.hasRole('ROLE_SHIPPER')}" th:href="@{/shipper}" class="btn btn-sm btn-warning fw-bold d-flex align-items-center gap-1 shadow-sm px-3" title="Vào cổng giao hàng">
+                        <i class="bi bi-truck"></i> Giao hàng
+                    </a>
+
+                    <!-- Admin Portal Shortcut Button -->
+                    <a th:if="${currentUser != null and currentUser.isAdmin()}" th:href="@{/admin}" class="btn btn-sm btn-danger fw-bold d-flex align-items-center gap-1 shadow-sm px-3" title="Vào trang quản trị">
+                        <i class="bi bi-speedometer2"></i> Quản trị
+                    </a>
+
+                    <!-- User Dropdown -->
+                    <div class="dropdown">
+                        <button class="os-icon-btn dropdown-toggle" type="button" id="userMenuBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle fs-5"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-2" aria-labelledby="userMenuBtn" style="min-width: 220px;">
+                            <!-- Logged In -->
+                            <li th:if="${isAuthenticated}">
+                                <div class="px-3 py-2 border-bottom">
+                                    <div class="fw-bold text-truncate" th:text="${currentUser.fullName}">Tên người dùng</div>
+                                    <small class="text-muted text-truncate d-block" th:text="${currentUser.email}">user@mail.com</small>
+                                </div>
+                            </li>
+
+                            <!-- Admin specific menu (No customer orders) -->
+                            <li th:if="${isAuthenticated and currentUser.isAdmin()}">
+                                <a class="dropdown-item py-2 text-danger fw-bold" th:href="@{/admin}">
+                                    <i class="bi bi-speedometer2 me-2"></i> Trang quản trị hệ thống
+                                </a>
+                            </li>
+
+                            <!-- Shipper menu -->
+                            <li th:if="${isAuthenticated and currentUser.hasRole('ROLE_SHIPPER')}">
+                                <a class="dropdown-item py-2 text-warning fw-bold" th:href="@{/shipper}">
+                                    <i class="bi bi-truck me-2"></i> Cổng giao nhận Shipper
+                                </a>
+                            </li>
+
+                            <!-- Customer menus (Tài khoản & Đơn hàng & Yêu thích) -->
+                            <li th:if="${isAuthenticated and !currentUser.isAdmin()}">
+                                <a class="dropdown-item py-2" th:href="@{/account}">
+                                    <i class="bi bi-person me-2"></i> Tài khoản của tôi
+                                </a>
+                            </li>
+                            <li th:if="${isAuthenticated and !currentUser.isAdmin()}">
+                                <a class="dropdown-item py-2" th:href="@{/account/orders}">
+                                    <i class="bi bi-receipt me-2"></i> Đơn hàng của tôi
+                                </a>
+                            </li>
+                            <li th:if="${isAuthenticated and !currentUser.isAdmin()}">
+                                <a class="dropdown-item py-2" th:href="@{/wishlist}">
+                                    <i class="bi bi-heart me-2 text-danger"></i> Sản phẩm yêu thích
+                                </a>
+                            </li>
+
+                            <!-- Staff admin link -->
+                            <li th:if="${isAuthenticated and !currentUser.isAdmin() and (currentUser.isBranchManager() or currentUser.hasRole('ROLE_SALES_STAFF'))}">
+                                <a class="dropdown-item py-2 text-primary fw-semibold" th:href="@{/admin}">
+                                    <i class="bi bi-speedometer2 me-2"></i> Quản lý nghiệp vụ
+                                </a>
+                            </li>
+                            <li th:if="${isAuthenticated}"><hr class="dropdown-divider"></li>
+                            <li th:if="${isAuthenticated}">
+                                <a class="dropdown-item py-2 text-danger" th:href="@{/auth/logout}">
+                                    <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
+                                </a>
+                            </li>
+
+                            <!-- Guest Not Logged In -->
+                            <li th:unless="${isAuthenticated}">
+                                <a class="dropdown-item py-2" th:href="@{/auth/login}">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i> Đăng nhập
+                                </a>
+                            </li>
+                            <li th:unless="${isAuthenticated}">
+                                <a class="dropdown-item py-2" th:href="@{/auth/register}">
+                                    <i class="bi bi-person-plus me-2"></i> Đăng ký tài khoản
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+</body>
+</html>

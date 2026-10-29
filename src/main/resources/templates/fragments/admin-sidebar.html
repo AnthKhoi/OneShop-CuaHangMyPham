@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside class="admin-sidebar" th:fragment="admin-sidebar">
+    <!-- Brand -->
+    <a th:href="@{/admin}" class="admin-sidebar-brand">
+        <i class="bi bi-stars"></i> OneShop <span>Admin</span>
+    </a>
+
+    <!-- Current Assigned Branch Badge -->
+    <div class="admin-branch-badge">
+        <i class="bi bi-geo-alt-fill text-danger"></i>
+        <div class="text-truncate">
+            <span class="d-block fw-bold text-white" th:text="${currentUser != null and currentUser.branchName != null ? currentUser.branchName : 'Toàn hệ thống'}">Toàn hệ thống</span>
+            <small th:text="${currentUser != null and currentUser.isAdmin() ? 'Quyền tối cao: ADMIN' : 'Phạm vi: Chi nhánh'}">Phạm vi hoạt động</small>
+        </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <ul class="admin-nav">
+        <!-- Dashboard (Hidden for Sales Staff) -->
+        <li class="admin-nav-item" th:if="${currentUser == null or !currentUser.hasRole('ROLE_SALES_STAFF')}">
+            <a th:href="@{/admin}" class="admin-nav-link" data-path="/admin">
+                <i class="bi bi-speedometer2"></i>
+                <span>Tổng quan</span>
+            </a>
+        </li>
+
+        <!-- POS / In-Store Sales (For all staff & admin) -->
+        <li class="admin-nav-item">
+            <a th:href="@{/admin/pos}" class="admin-nav-link" data-path="/admin/pos">
+                <i class="bi bi-cart-check-fill text-warning"></i>
+                <span class="fw-bold">Bán hàng tại quầy (POS)</span>
+            </a>
+        </li>
+
+        <!-- Orders (Available to all staff & admin) -->
+        <li class="admin-nav-item">
+            <a th:href="@{/admin/orders}" class="admin-nav-link" data-path="/admin/orders">
+                <i class="bi bi-receipt"></i>
+                <span th:text="${currentUser != null and currentUser.hasRole('ROLE_SALES_STAFF') ? 'Đơn hàng chi nhánh' : 'Quản lý đơn hàng'}">Quản lý đơn hàng</span>
+            </a>
+        </li>
+
+        <!-- Products (Available to all, sales staff is read-only) -->
+        <li class="admin-nav-item">
+            <a th:href="@{/admin/products}" class="admin-nav-link" data-path="/admin/products">
+                <i class="bi bi-box-seam"></i>
+                <span th:text="${currentUser != null and currentUser.hasRole('ROLE_SALES_STAFF') ? 'Tra cứu mỹ phẩm' : 'Sản phẩm mỹ phẩm'}">Sản phẩm mỹ phẩm</span>
+            </a>
+        </li>
+
+        <!-- Branch Inventory (Available to all, sales staff is read-only) -->
+        <li class="admin-nav-item">
+            <a th:href="@{/admin/inventory}" class="admin-nav-link" data-path="/admin/inventory">
+                <i class="bi bi-boxes"></i>
+                <span th:text="${currentUser != null and currentUser.hasRole('ROLE_SALES_STAFF') ? 'Tồn kho chi nhánh' : 'Tồn kho chi nhánh'}">Tồn kho chi nhánh</span>
+            </a>
+        </li>
+
+        <!-- Stock Movements (Admin & Branch Manager only) -->
+        <li class="admin-nav-item" th:if="${currentUser == null or !currentUser.hasRole('ROLE_SALES_STAFF')}">
+            <a th:href="@{/admin/inventory/movements}" class="admin-nav-link" data-path="/admin/inventory/movements">
+                <i class="bi bi-clock-history"></i>
+                <span>Nhật ký biến động kho</span>
+            </a>
+        </li>
+
+        <!-- Low Stock Alerts (Admin & Branch Manager only) -->
+        <li class="admin-nav-item" th:if="${currentUser == null or !currentUser.hasRole('ROLE_SALES_STAFF')}">
+            <a th:href="@{/admin/inventory/low-stock}" class="admin-nav-link" data-path="/admin/inventory/low-stock">
+                <i class="bi bi-exclamation-diamond text-warning"></i>
+                <span>Cảnh báo tồn thấp</span>
+            </a>
+        </li>
+
+        <!-- Categories (Admin & Branch Manager only) -->
+        <li class="admin-nav-item" th:if="${currentUser == null or !currentUser.hasRole('ROLE_SALES_STAFF')}">
+            <a th:href="@{/admin/categories}" class="admin-nav-link" data-path="/admin/categories">
+                <i class="bi bi-tags"></i>
+                <span>Danh mục mỹ phẩm</span>
+            </a>
+        </li>
+
+        <!-- Brands (Admin & Branch Manager only) -->
+        <li class="admin-nav-item" th:if="${currentUser == null or !currentUser.hasRole('ROLE_SALES_STAFF')}">
+            <a th:href="@{/admin/brands}" class="admin-nav-link" data-path="/admin/brands">
+                <i class="bi bi-award"></i>
+                <span>Thương hiệu</span>
+            </a>
+        </li>
+
+        <!-- Promotions (Admin & Branch Manager only) -->
+        <li class="admin-nav-item" th:if="${currentUser == null or !currentUser.hasRole('ROLE_SALES_STAFF')}">
+            <a th:href="@{/admin/promotions}" class="admin-nav-link" data-path="/admin/promotions">
+                <i class="bi bi-ticket-perforated"></i>
+                <span>Khuyến mãi & Voucher</span>
+            </a>
+        </li>
+
+        <!-- ADMIN ONLY MENUS -->
+        <li class="admin-nav-item" th:if="${currentUser != null and currentUser.isAdmin()}">
+            <a th:href="@{/admin/branches}" class="admin-nav-link" data-path="/admin/branches">
+                <i class="bi bi-shop"></i>
+                <span>Chuỗi chi nhánh</span>
+            </a>
+        </li>
+        <li class="admin-nav-item" th:if="${currentUser != null and currentUser.isAdmin()}">
+            <a th:href="@{/admin/users}" class="admin-nav-link" data-path="/admin/users">
+                <i class="bi bi-people"></i>
+                <span>Nhân sự & Người dùng</span>
+            </a>
+        </li>
+    </ul>
+
+    <!-- Bottom Action -->
+    <div class="p-3 border-top border-secondary">
+        <a th:href="@{/}" class="btn btn-outline-danger text-white border-danger btn-sm w-100 fw-bold py-2">
+            <i class="bi bi-arrow-left-circle-fill me-1 text-danger"></i> Quay về trang chính
+        </a>
+    </div>
+
+    <!-- Active Navigation Script -->
+    <script>
+        (function() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.admin-nav-link');
+            let bestMatchLink = null;
+            let maxLen = -1;
+
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (!href) return;
+                
+                if (href === currentPath) {
+                    bestMatchLink = link;
+                    maxLen = 9999;
+                } else if (maxLen < 9999 && href !== '/admin' && currentPath.startsWith(href)) {
+                    if (href.length > maxLen) {
+                        maxLen = href.length;
+                        bestMatchLink = link;
+                    }
+                }
+            });
+
+            if (!bestMatchLink && (currentPath === '/admin' || currentPath === '/admin/')) {
+                bestMatchLink = document.querySelector('.admin-nav-link[href="/admin"]');
+            }
+
+            if (bestMatchLink) {
+                bestMatchLink.classList.add('active');
+            }
+        })();
+    </script>
+</aside>
+</body>
+</html>
