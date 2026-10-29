@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Thư Viện Ảnh Cloudinary — OneShop Admin</title>
+</head>
+<body>
+<div>
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h3 class="fw-bold m-0 text-dark">Quản lý kho ảnh & Media</h3>
+            <p class="text-muted small m-0">Lưu trữ và phân phối hình ảnh qua CDN Cloudinary với tính năng tự động tối ưu</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge px-3 py-2 fs-6" th:classappend="${isConfigured ? 'bg-success' : 'bg-warning text-dark'}">
+                <i class="bi" th:classappend="${isConfigured ? 'bi-cloud-check-fill' : 'bi-cloud-slash-fill'}"></i>
+                <span th:text="${isConfigured ? 'Cloudinary Đang Hoạt Động' : 'Chế Độ Dự Phòng (Fallback)'}">Trạng thái</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert" th:if="${errorMessage}">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <span th:text="${errorMessage}">Đã xảy ra lỗi</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert" th:if="${successMessage}">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        <span th:text="${successMessage}">Thành công</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Upload Card -->
+    <div class="admin-card p-4 mb-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-cloud-arrow-up-fill text-danger me-2"></i>Tải hình ảnh mới lên Cloudinary</h5>
+        <form th:action="@{/admin/media/upload}" method="post" enctype="multipart/form-data" class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label small fw-bold">Chọn tệp ảnh (JPG, PNG, WEBP, GIF tối đa 10MB) <span class="text-danger">*</span></label>
+                <input type="file" name="file" class="form-control" accept="image/*" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold">Thư mục phân loại</label>
+                <select name="folder" class="form-select">
+                    <option value="products">Sản phẩm (products)</option>
+                    <option value="banners">Banner quảng cáo (banners)</option>
+                    <option value="categories">Danh mục mỹ phẩm (categories)</option>
+                    <option value="brands">Logo thương hiệu (brands)</option>
+                    <option value="general">Khác (general)</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-danger w-100 py-2">
+                    <i class="bi bi-upload me-1"></i> Tải ảnh lên
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Media Library Grid -->
+    <div class="admin-card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-bold m-0"><i class="bi bi-images text-primary me-2"></i>Kho hình ảnh đã lưu trữ</h5>
+            <span class="text-muted small">Tổng cộng: <strong th:text="${#lists.size(mediaAssets)}">0</strong> ảnh</span>
+        </div>
+
+        <div th:if="${#lists.isEmpty(mediaAssets)}" class="text-center py-5 text-muted">
+            <i class="bi bi-image display-4 d-block mb-3 text-secondary"></i>
+            Chưa có hình ảnh nào được tải lên qua Cloudinary. Hãy tải ảnh đầu tiên ở phía trên!
+        </div>
+
+        <div class="row g-3" th:if="${not #lists.isEmpty(mediaAssets)}">
+            <div class="col-6 col-sm-4 col-md-3 col-xl-2" th:each="asset : ${mediaAssets}">
+                <div class="border rounded-3 p-2 bg-white h-100 d-flex flex-column justify-content-between shadow-sm">
+                    <div class="position-relative overflow-hidden rounded mb-2 bg-light text-center" style="height: 140px;">
+                        <img th:src="${asset.secureUrl}" th:alt="${asset.fileName}" class="img-fluid h-100 w-100" style="object-fit: contain;">
+                        <span class="position-absolute top-0 start-0 badge bg-dark opacity-75 m-1 small" th:text="${asset.folder}">products</span>
+                    </div>
+
+                    <div>
+                        <div class="small fw-bold text-truncate text-dark mb-1" th:title="${asset.fileName}" th:text="${asset.fileName}">Tên file</div>
+                        <div class="text-muted small mb-2" style="font-size: 0.75rem;">
+                            <span th:text="${asset.fileSize != null ? (asset.fileSize / 1024) + ' KB' : ''}">0 KB</span>
+                            <span th:if="${asset.createdAt != null}"> • <span th:text="${#temporals.format(asset.createdAt, 'dd/MM/yyyy')}">01/01/2026</span></span>
+                        </div>
+
+                        <div class="d-flex gap-1">
+                            <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" th:onclick="'copyToClipboard(\'' + ${asset.secureUrl} + '\')'" title="Sao chép URL">
+                                <i class="bi bi-clipboard"></i> URL
+                            </button>
+                            <form th:action="@{/admin/media/delete}" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa ảnh này?');">
+                                <input type="hidden" name="publicId" th:value="${asset.cloudinaryPublicId}">
+                                <button type="submit" class="btn btn-outline-danger btn-sm" title="Xóa ảnh">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        alert('Đã sao chép link ảnh vào bộ nhớ tạm: \n' + text);
+    }, function(err) {
+        prompt('Sao chép đường dẫn ảnh:', text);
+    });
+}
+</script>
+</body>
+</html>

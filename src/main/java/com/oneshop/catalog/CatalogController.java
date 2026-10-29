@@ -48,13 +48,6 @@ public class CatalogController {
             @RequestParam(value = "page", defaultValue = "0") int page,
             Model model) {
 
-        if (keyword != null) {
-            keyword = keyword.trim();
-            if (keyword.isEmpty()) {
-                keyword = null;
-            }
-        }
-
         Sort sortObj = switch (sort) {
             case "price_asc" -> Sort.by("price").ascending();
             case "price_desc" -> Sort.by("price").descending();
@@ -158,7 +151,6 @@ public class CatalogController {
             @PathVariable("id") Long productId,
             @RequestParam("rating") int rating,
             @RequestParam("comment") String comment,
-            @RequestParam(value = "redirectUrl", required = false) String redirectUrl,
             RedirectAttributes redirectAttributes) {
 
         var currentUserOpt = SecurityUtils.getCurrentUser();
@@ -175,9 +167,6 @@ public class CatalogController {
         if (!eligible) {
             redirectAttributes.addFlashAttribute("errorMessage",
                     "Chỉ khách hàng đã mua và nhận hàng thành công mới có thể đánh giá sản phẩm này.");
-            if (redirectUrl != null && !redirectUrl.isBlank()) {
-                return "redirect:" + redirectUrl;
-            }
             return "redirect:/products/" + product.getSlug() + "#reviewsSection";
         }
 
@@ -197,50 +186,24 @@ public class CatalogController {
         productReviewRepository.save(review);
 
         redirectAttributes.addFlashAttribute("successMessage",
-                "Cảm ơn bạn! Đánh giá " + rating + " sao cho sản phẩm \"" + product.getName() + "\" đã được ghi nhận thành công.");
-        
-        if (redirectUrl != null && !redirectUrl.isBlank()) {
-            return "redirect:" + redirectUrl;
-        }
+                "Cảm ơn bạn! Đánh giá " + rating + " sao của bạn đã được ghi nhận thành công.");
         return "redirect:/products/" + product.getSlug() + "#reviewsSection";
     }
 
     @GetMapping("/categories/{slug}")
-    public String categoryProducts(
-            @PathVariable("slug") String slug,
-            @RequestParam(value = "brand", required = false) Long brandId,
-            @RequestParam(value = "minPrice", required = false) BigDecimal minPrice,
-            @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice,
-            @RequestParam(value = "sort", defaultValue = "newest") String sort,
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            Model model) {
+    public String categoryProducts(@PathVariable("slug") String slug, Model model) {
         Category category = catalogService.getCategoryBySlug(slug);
-        return catalog(null, category.getId(), brandId, minPrice, maxPrice, sort, page, model);
+        return "redirect:/products?category=" + category.getId();
     }
 
     @GetMapping("/brands/{slug}")
-    public String brandProducts(
-            @PathVariable("slug") String slug,
-            @RequestParam(value = "category", required = false) Long categoryId,
-            @RequestParam(value = "minPrice", required = false) BigDecimal minPrice,
-            @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice,
-            @RequestParam(value = "sort", defaultValue = "newest") String sort,
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            Model model) {
+    public String brandProducts(@PathVariable("slug") String slug, Model model) {
         Brand brand = catalogService.getBrandBySlug(slug);
-        return catalog(null, categoryId, brand.getId(), minPrice, maxPrice, sort, page, model);
+        return "redirect:/products?brand=" + brand.getId();
     }
 
     @GetMapping("/search")
-    public String search(
-            @RequestParam(value = "q", required = false) String query,
-            @RequestParam(value = "category", required = false) Long categoryId,
-            @RequestParam(value = "brand", required = false) Long brandId,
-            @RequestParam(value = "minPrice", required = false) BigDecimal minPrice,
-            @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice,
-            @RequestParam(value = "sort", defaultValue = "newest") String sort,
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            Model model) {
-        return catalog(query, categoryId, brandId, minPrice, maxPrice, sort, page, model);
+    public String search(@RequestParam("q") String query) {
+        return "redirect:/products?keyword=" + query;
     }
 }

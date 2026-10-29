@@ -123,35 +123,33 @@ public class CartController {
     @PostMapping("/apply-coupon")
     public String applyCoupon(
             @RequestParam("couponCode") String couponCode,
-            @RequestParam(value = "redirect", required = false) String redirect,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
+        if (!SecurityUtils.isAuthenticated()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Vui lòng đăng nhập tài khoản để áp dụng mã giảm giá!");
+            return "redirect:/auth/login?redirect=/cart";
+        }
+
         try {
             cartService.applyCoupon(session, couponCode);
-            redirectAttributes.addFlashAttribute("successMessage", "Áp dụng mã giảm giá '" + couponCode.trim().toUpperCase() + "' thành công!");
+            redirectAttributes.addFlashAttribute("successMessage", "Áp dụng mã giảm giá '" + couponCode + "' thành công!");
         } catch (Exception ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
         }
 
-        if (org.springframework.util.StringUtils.hasText(redirect) && redirect.startsWith("/") && !redirect.startsWith("//")) {
-            return "redirect:" + redirect;
-        }
         return "redirect:/cart";
     }
 
     @PostMapping("/remove-coupon")
-    public String removeCoupon(
-            @RequestParam(value = "redirect", required = false) String redirect,
-            HttpSession session,
-            RedirectAttributes redirectAttributes) {
+    public String removeCoupon(HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!SecurityUtils.isAuthenticated()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Vui lòng đăng nhập tài khoản để gỡ mã giảm giá!");
+            return "redirect:/auth/login?redirect=/cart";
+        }
 
         cartService.removeCoupon(session);
         redirectAttributes.addFlashAttribute("successMessage", "Đã gỡ bỏ mã giảm giá.");
-
-        if (org.springframework.util.StringUtils.hasText(redirect) && redirect.startsWith("/") && !redirect.startsWith("//")) {
-            return "redirect:" + redirect;
-        }
         return "redirect:/cart";
     }
 }

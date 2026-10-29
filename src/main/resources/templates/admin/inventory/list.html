@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Quản Lý Tồn Kho Chi Nhánh — OneShop Admin</title>
+</head>
+<body>
+<div>
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h3 class="fw-bold m-0 text-dark">Quản lý tồn kho theo chi nhánh</h3>
+            <p class="text-muted small m-0">Kiểm soát số lượng tồn khả dụng, nhập/xuất và điều chỉnh tồn kho vật lý</p>
+        </div>
+        <div class="d-flex gap-2" th:if="${currentUser == null or !currentUser.hasRole('ROLE_SALES_STAFF')}">
+            <a th:href="@{/admin/inventory/movements}" class="btn btn-outline-dark">
+                <i class="bi bi-clock-history me-1"></i> Nhật ký biến động
+            </a>
+            <a th:href="@{/admin/inventory/low-stock}" class="btn btn-outline-danger">
+                <i class="bi bi-exclamation-triangle me-1"></i> Cảnh báo tồn thấp
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert" th:if="${errorMessage}">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <span th:text="${errorMessage}">Đã xảy ra lỗi</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert" th:if="${successMessage}">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        <span th:text="${successMessage}">Thành công</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="admin-card p-3 mb-4">
+        <form th:action="@{/admin/inventory}" method="get" class="row g-2 align-items-center">
+            <div class="col-md-5" th:if="${currentUser != null and currentUser.isAdmin()}">
+                <select name="branchId" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="" th:selected="${selectedBranchId == null}">Tất cả chi nhánh toàn hệ thống</option>
+                    <option th:each="b : ${branches}" th:value="${b.id}" th:text="${b.name}" th:selected="${selectedBranchId == b.id}">Branch</option>
+                </select>
+            </div>
+            <div class="col-md-5">
+                <input type="text" name="keyword" class="form-control form-control-sm" placeholder="Tìm theo tên sản phẩm hoặc SKU..." th:value="${keyword}">
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-dark flex-grow-1">Lọc</button>
+                <a th:href="@{/admin/inventory}" class="btn btn-sm btn-outline-secondary">Xóa</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Inventory Table -->
+    <div class="admin-card">
+        <div class="table-responsive">
+            <table class="table admin-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Chi nhánh</th>
+                        <th>Sản phẩm mỹ phẩm</th>
+                        <th>Tồn vật lý</th>
+                        <th>Đang giữ</th>
+                        <th>Khả dụng</th>
+                        <th>Ngưỡng cảnh báo</th>
+                        <th>Tình trạng</th>
+                        <th class="text-end">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="inv : ${inventoryList}">
+                        <td>
+                            <strong class="text-dark" th:text="${inv.branch.name}">Chi nhánh</strong>
+                            <small class="text-muted d-block" th:text="${inv.branch.code}">CN-001</small>
+                        </td>
+                        <td>
+                            <strong class="text-dark" th:text="${inv.product.name}">Tên sản phẩm</strong>
+                            <small class="text-muted d-block">SKU: <code th:text="${inv.product.sku}">SKU</code></small>
+                        </td>
+                        <td>
+                            <strong class="fs-6" th:text="${inv.quantityOnHand}">0</strong>
+                        </td>
+                        <td>
+                            <span class="text-muted" th:text="${inv.quantityReserved}">0</span>
+                        </td>
+                        <td>
+                            <strong class="fs-6 text-primary" th:text="${inv.getAvailableQuantity()}">0</strong>
+                        </td>
+                        <td th:text="${inv.reorderLevel}">10</td>
+                        <td>
+                            <span th:if="${inv.isLowStock()}" class="badge bg-danger">TỒN THẤP</span>
+                            <span th:unless="${inv.isLowStock()}" class="badge bg-success">ỔN ĐỊNH</span>
+                        </td>
+                        <td class="text-end" th:if="${currentUser == null or !currentUser.hasRole('ROLE_SALES_STAFF')}">
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-primary" title="Điều chỉnh"
+                                        th:data-branch-id="${inv.branch.id}"
+                                        th:data-product-id="${inv.product.id}"
+                                        th:data-product-name="${inv.product.name}"
+                                        th:data-qty="${inv.quantityOnHand}"
+                                        onclick="handleOpenAdjust(this)">
+                                    <i class="bi bi-sliders"></i> Sửa
+                                </button>
+                                <button type="button" class="btn btn-outline-success" title="Nhập hàng"
+                                        th:data-branch-id="${inv.branch.id}"
+                                        th:data-product-id="${inv.product.id}"
+                                        th:data-product-name="${inv.product.name}"
+                                        onclick="handleOpenImport(this)">
+                                    <i class="bi bi-box-arrow-in-down"></i> Nhập
+                                </button>
+                                <button type="button" class="btn btn-outline-danger" title="Xuất hủy"
+                                        th:data-branch-id="${inv.branch.id}"
+                                        th:data-product-id="${inv.product.id}"
+                                        th:data-product-name="${inv.product.name}"
+                                        th:data-qty="${inv.quantityOnHand}"
+                                        onclick="handleOpenExport(this)">
+                                    <i class="bi bi-box-arrow-up"></i> Xuất
+                                </button>
+                            </div>
+                        </td>
+                        <td class="text-end" th:if="${currentUser != null and currentUser.hasRole('ROLE_SALES_STAFF')}">
+                            <span class="badge bg-light text-secondary border"><i class="bi bi-eye me-1"></i>Chỉ tra cứu</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(inventoryList)}">
+                        <td colspan="8" class="text-center py-4 text-muted">Không tìm thấy bản ghi tồn kho nào</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Stock Adjustment (Reason is mandatory) -->
+<div class="modal fade" id="adjustModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form th:action="@{/admin/inventory/adjust}" method="post">
+                <input type="hidden" name="branchId" id="adjBranchId">
+                <input type="hidden" name="productId" id="adjProductId">
+
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-primary">Điều chỉnh số lượng tồn kho</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">Sản phẩm:</label>
+                        <div class="fw-bold" id="adjProductName">Tên sản phẩm</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Số lượng tồn kho thực tế mới <span class="text-danger">*</span></label>
+                        <input type="number" name="newQuantity" id="adjNewQty" class="form-control" min="0" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Lý do điều chỉnh (Bắt buộc) <span class="text-danger">*</span></label>
+                        <textarea name="reason" class="form-control" rows="2" placeholder="Ví dụ: Kiểm kê định kỳ phát hiện sai lệch..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary">Xác nhận điều chỉnh</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Quick Import -->
+<div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form th:action="@{/admin/inventory/import}" method="post">
+                <input type="hidden" name="branchId" id="impBranchId">
+                <input type="hidden" name="productId" id="impProductId">
+
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-success">Nhập kho bổ sung sản phẩm</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">Sản phẩm:</label>
+                        <div class="fw-bold" id="impProductName">Tên sản phẩm</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Số lượng nhập thêm <span class="text-danger">*</span></label>
+                        <input type="number" name="quantity" class="form-control" value="10" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Ghi chú nguồn hàng</label>
+                        <input type="text" name="reason" class="form-control" placeholder="Nhập từ tổng kho / NCC">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-success">Xác nhận nhập kho</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Quick Export -->
+<div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form th:action="@{/admin/inventory/export}" method="post">
+                <input type="hidden" name="branchId" id="expBranchId">
+                <input type="hidden" name="productId" id="expProductId">
+
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-danger">Xuất hàng / Xuất hủy</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">Sản phẩm:</label>
+                        <div class="fw-bold" id="expProductName">Tên sản phẩm</div>
+                        <small class="text-muted">Tồn hiện tại: <span id="expCurrentStock">0</span></small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Số lượng xuất <span class="text-danger">*</span></label>
+                        <input type="number" name="quantity" class="form-control" value="1" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Lý do xuất kho (Bắt buộc) <span class="text-danger">*</span></label>
+                        <input type="text" name="reason" class="form-control" placeholder="Hàng móp vỡ, hết hạn, xuất làm mẫu thử..." required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-danger">Xác nhận xuất</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function handleOpenAdjust(btn) {
+        document.getElementById('adjBranchId').value = btn.getAttribute('data-branch-id');
+        document.getElementById('adjProductId').value = btn.getAttribute('data-product-id');
+        document.getElementById('adjProductName').innerText = btn.getAttribute('data-product-name');
+        document.getElementById('adjNewQty').value = btn.getAttribute('data-qty');
+        new bootstrap.Modal(document.getElementById('adjustModal')).show();
+    }
+
+    function handleOpenImport(btn) {
+        document.getElementById('impBranchId').value = btn.getAttribute('data-branch-id');
+        document.getElementById('impProductId').value = btn.getAttribute('data-product-id');
+        document.getElementById('impProductName').innerText = btn.getAttribute('data-product-name');
+        new bootstrap.Modal(document.getElementById('importModal')).show();
+    }
+
+    function handleOpenExport(btn) {
+        document.getElementById('expBranchId').value = btn.getAttribute('data-branch-id');
+        document.getElementById('expProductId').value = btn.getAttribute('data-product-id');
+        document.getElementById('expProductName').innerText = btn.getAttribute('data-product-name');
+        document.getElementById('expCurrentStock').innerText = btn.getAttribute('data-qty');
+        new bootstrap.Modal(document.getElementById('exportModal')).show();
+    }
+
+    function openAdjustModal(branchId, productId, name, currentQty) {
+        document.getElementById('adjBranchId').value = branchId;
+        document.getElementById('adjProductId').value = productId;
+        document.getElementById('adjProductName').innerText = name;
+        document.getElementById('adjNewQty').value = currentQty;
+        new bootstrap.Modal(document.getElementById('adjustModal')).show();
+    }
+
+    function openImportModal(branchId, productId, name) {
+        document.getElementById('impBranchId').value = branchId;
+        document.getElementById('impProductId').value = productId;
+        document.getElementById('impProductName').innerText = name;
+        new bootstrap.Modal(document.getElementById('importModal')).show();
+    }
+
+    function openExportModal(branchId, productId, name, currentStock) {
+        document.getElementById('expBranchId').value = branchId;
+        document.getElementById('expProductId').value = productId;
+        document.getElementById('expProductName').innerText = name;
+        document.getElementById('expCurrentStock').innerText = currentStock;
+        new bootstrap.Modal(document.getElementById('exportModal')).show();
+    }
+</script>
+</body>
+</html>

@@ -30,11 +30,11 @@
                     <div class="mb-4">
                         <div class="os-filter-title">Danh mục</div>
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="category" id="catAll" value="" th:checked="${selectedCategory == null}" onchange="selectCategoryFilter('')">
+                            <input class="form-check-input" type="radio" name="category" id="catAll" value="" th:checked="${selectedCategory == null}" onchange="this.form.submit()">
                             <label class="form-check-label small" for="catAll">Tất cả danh mục</label>
                         </div>
                         <div class="form-check mb-2" th:each="cat : ${categories}">
-                            <input class="form-check-input" type="radio" name="category" th:id="'cat_' + ${cat.id}" th:value="${cat.id}" th:checked="${selectedCategory == cat.id}" th:onchange="'selectCategoryFilter(' + ${cat.id} + ')'">
+                            <input class="form-check-input" type="radio" name="category" th:id="'cat_' + ${cat.id}" th:value="${cat.id}" th:checked="${selectedCategory == cat.id}" onchange="this.form.submit()">
                             <label class="form-check-label small" th:for="'cat_' + ${cat.id}" th:text="${cat.name}">Category</label>
                         </div>
                     </div>
@@ -43,11 +43,11 @@
                     <div class="mb-4">
                         <div class="os-filter-title">Thương hiệu</div>
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="brand" id="brandAll" value="" th:checked="${selectedBrand == null}" onchange="selectBrandFilter('')">
+                            <input class="form-check-input" type="radio" name="brand" id="brandAll" value="" th:checked="${selectedBrand == null}" onchange="this.form.submit()">
                             <label class="form-check-label small" for="brandAll">Tất cả thương hiệu</label>
                         </div>
                         <div class="form-check mb-2" th:each="b : ${brands}">
-                            <input class="form-check-input" type="radio" name="brand" th:id="'brand_' + ${b.id}" th:value="${b.id}" th:checked="${selectedBrand == b.id}" th:onchange="'selectBrandFilter(' + ${b.id} + ')'">
+                            <input class="form-check-input" type="radio" name="brand" th:id="'brand_' + ${b.id}" th:value="${b.id}" th:checked="${selectedBrand == b.id}" onchange="this.form.submit()">
                             <label class="form-check-label small" th:for="'brand_' + ${b.id}" th:text="${b.name}">Brand</label>
                         </div>
                     </div>
@@ -143,22 +143,6 @@
                         if (form) form.submit();
                     }
 
-                    function selectCategoryFilter(catId) {
-                        const brandAll = document.getElementById('brandAll');
-                        if (brandAll) brandAll.checked = true;
-                        const kw = document.querySelector('input[name="keyword"]');
-                        if (kw) kw.value = '';
-                        document.getElementById('filterForm').submit();
-                    }
-
-                    function selectBrandFilter(brandId) {
-                        const catAll = document.getElementById('catAll');
-                        if (catAll) catAll.checked = true;
-                        const kw = document.querySelector('input[name="keyword"]');
-                        if (kw) kw.value = '';
-                        document.getElementById('filterForm').submit();
-                    }
-
                     document.addEventListener('DOMContentLoaded', function() {
                         updateDualSlider('none');
                     });
@@ -171,31 +155,11 @@
         <div class="col-lg-9">
             <!-- Header Bar -->
             <div class="bg-white p-3 rounded-3 border d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 shadow-sm">
-                <div class="d-flex flex-wrap align-items-center gap-2">
+                <div>
                     <span class="text-muted small">Hiển thị <strong class="text-dark" th:text="${productPage.totalElements}">0</strong> sản phẩm mỹ phẩm</span>
-
-                    <span th:if="${keyword}" class="badge bg-danger text-white py-1 px-2 d-inline-flex align-items-center gap-1">
+                    <span th:if="${keyword}" class="badge bg-light text-dark ms-2 border">
                         Từ khóa: "<span th:text="${keyword}"></span>"
-                        <a th:href="@{/products(category=${selectedCategory}, brand=${selectedBrand}, minPrice=${minPrice}, maxPrice=${maxPrice}, sort=${selectedSort})}" class="text-white text-decoration-none fw-bold ms-1" title="Bỏ lọc">&times;</a>
                     </span>
-
-                    <th:block th:if="${selectedCategory != null}">
-                        <span th:each="cat : ${categories}" th:if="${cat.id == selectedCategory}" class="badge bg-primary text-white py-1 px-2 d-inline-flex align-items-center gap-1">
-                            Danh mục: <span th:text="${cat.name}"></span>
-                            <a th:href="@{/products(keyword=${keyword}, brand=${selectedBrand}, minPrice=${minPrice}, maxPrice=${maxPrice}, sort=${selectedSort})}" class="text-white text-decoration-none fw-bold ms-1" title="Bỏ lọc">&times;</a>
-                        </span>
-                    </th:block>
-
-                    <th:block th:if="${selectedBrand != null}">
-                        <span th:each="b : ${brands}" th:if="${b.id == selectedBrand}" class="badge bg-dark text-white py-1 px-2 d-inline-flex align-items-center gap-1">
-                            Thương hiệu: <span th:text="${b.name}"></span>
-                            <a th:href="@{/products(keyword=${keyword}, category=${selectedCategory}, minPrice=${minPrice}, maxPrice=${maxPrice}, sort=${selectedSort})}" class="text-white text-decoration-none fw-bold ms-1" title="Bỏ lọc">&times;</a>
-                        </span>
-                    </th:block>
-
-                    <a th:if="${keyword != null or selectedCategory != null or selectedBrand != null or minPrice != null or maxPrice != null}" th:href="@{/products}" class="small text-danger fw-semibold text-decoration-none ms-2">
-                        <i class="bi bi-x-circle me-1"></i>Xóa bộ lọc
-                    </a>
                 </div>
 
                 <!-- Sort Control -->

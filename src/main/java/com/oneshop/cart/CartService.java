@@ -58,12 +58,7 @@ public class CartService {
             }
 
             // Sync CartDto from DB
-            String prevCouponCode = sessionCart != null ? sessionCart.getCouponCode() : null;
-            Long prevBranchId = sessionCart != null ? sessionCart.getSelectedBranchId() : null;
-
             cart = new CartDto();
-            cart.setSelectedBranchId(prevBranchId);
-
             for (CartItemEntity entity : dbItems) {
                 Product p = entity.getProduct();
                 if (Boolean.TRUE.equals(p.getActive())) {
@@ -78,12 +73,6 @@ public class CartService {
                             .build());
                 }
             }
-
-            if (prevCouponCode != null && !cart.isEmpty()) {
-                cart.setCouponCode(prevCouponCode);
-                recalculateCoupon(cart);
-            }
-
             session.setAttribute(SESSION_CART_KEY, cart);
             return cart;
         }

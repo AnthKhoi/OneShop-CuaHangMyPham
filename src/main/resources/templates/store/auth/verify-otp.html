@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác Thực Mã OTP — OneShop Cosmetics</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/oneshop.css}">
+    <style>
+        .otp-input {
+            letter-spacing: 12px;
+            font-size: 32px;
+            font-weight: 800;
+            text-align: center;
+            font-family: monospace;
+            padding: 12px 16px;
+        }
+    </style>
+</head>
+<body class="bg-light py-5">
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <!-- Brand Header -->
+            <div class="text-center mb-4">
+                <a th:href="@{/}" class="os-brand justify-content-center">
+                    <i class="bi bi-stars"></i> OneShop
+                    <span class="badge-tag">BEAUTY</span>
+                </a>
+                <p class="text-muted mt-2">Hệ thống chuỗi bán lẻ mỹ phẩm chính hãng</p>
+            </div>
+
+            <!-- OTP Card -->
+            <div class="bg-white p-4 p-md-5 rounded-4 border shadow-sm mb-4">
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex p-3 rounded-circle bg-danger bg-opacity-10 text-danger mb-3">
+                        <i class="bi bi-envelope-check-fill fs-1"></i>
+                    </div>
+                    <h4 class="fw-bold m-0">Xác thực tài khoản</h4>
+                    <p class="text-muted small mt-2">
+                        Vui lòng nhập mã OTP 6 chữ số đã được gửi đến địa chỉ email:
+                        <br><strong class="text-dark" th:text="${email}">email@example.com</strong>
+                    </p>
+                </div>
+
+                <!-- Alert Messages -->
+                <div th:if="${errorMessage}" class="alert alert-danger py-2 small" th:text="${errorMessage}"></div>
+                <div th:if="${successMessage}" class="alert alert-success py-2 small" th:text="${successMessage}"></div>
+
+                <!-- Form Submit OTP -->
+                <form th:action="@{/auth/verify-otp}" method="post">
+                    <input type="hidden" name="email" th:value="${email}">
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-center d-block">Mã xác thực OTP (6 chữ số)</label>
+                        <input type="text" name="otpCode" class="form-control otp-input"
+                               maxlength="6" placeholder="••••••" pattern="[0-9]{6}" required autofocus>
+                        <div class="form-text text-center mt-2 small text-muted">
+                            <i class="bi bi-clock-history me-1"></i> Mã có hiệu lực trong 5 phút.
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-os-primary btn-lg w-100 py-3 fw-bold mb-3">
+                        <i class="bi bi-shield-check me-1"></i> Xác nhận & Kích hoạt
+                    </button>
+                </form>
+
+                <!-- Resend OTP Form -->
+                <div class="text-center border-top pt-3 mt-3">
+                    <p class="small text-muted mb-2">Chưa nhận được mã OTP?</p>
+                    <form th:action="@{/auth/resend-otp}" method="post" id="resendForm">
+                        <input type="hidden" name="email" th:value="${email}">
+                        <input type="hidden" name="type" value="REGISTRATION">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm" id="btnResend">
+                            <i class="bi bi-arrow-clockwise me-1"></i> Gửi lại mã OTP <span id="countdown"></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="text-center small text-muted">
+                Quay lại <a th:href="@{/auth/login}" class="text-decoration-none fw-bold text-danger">Đăng nhập</a> hoặc
+                <a th:href="@{/auth/register}" class="text-decoration-none text-muted">Đăng ký lại</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 60-second cooldown for resend button
+    let cooldown = 60;
+    const btn = document.getElementById('btnResend');
+    const span = document.getElementById('countdown');
+
+    function startCooldown() {
+        btn.disabled = true;
+        const interval = setInterval(() => {
+            span.textContent = `(${cooldown}s)`;
+            cooldown--;
+            if (cooldown < 0) {
+                clearInterval(interval);
+                btn.disabled = false;
+                span.textContent = '';
+            }
+        }, 1000);
+    }
+    startCooldown();
+</script>
+</body>
+</html>

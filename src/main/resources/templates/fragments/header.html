@@ -59,24 +59,7 @@
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item py-2 fw-semibold text-danger" th:href="@{/products}">Tất cả danh mục &raquo;</a></li>
-                        </ul>
-                    </li>
-
-                    <!-- Brands Dropdown -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link-custom dropdown-toggle" href="#" id="brandDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Thương hiệu
-                        </a>
-                        <ul class="dropdown-menu shadow-sm border-0 py-2" aria-labelledby="brandDropdown" style="max-height: 380px; overflow-y: auto; min-width: 220px;">
-                            <li th:each="b : ${globalBrands}">
-                                <a class="dropdown-item py-2 d-flex align-items-center justify-content-between" th:href="@{/products(brand=${b.id})}">
-                                    <span th:text="${b.name}">La Roche-Posay</span>
-                                    <i class="bi bi-chevron-right text-muted small"></i>
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item py-2 fw-semibold text-danger" th:href="@{/products}">Xem tất cả sản phẩm &raquo;</a></li>
+                            <li><a class="dropdown-item py-2 fw-semibold text-primary" th:href="@{/products}">Tất cả danh mục &raquo;</a></li>
                         </ul>
                     </li>
 

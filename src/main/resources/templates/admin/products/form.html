@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${product.id == null ? 'Thêm Sản Phẩm Mới — OneShop Admin' : 'Chỉnh Sửa Sản Phẩm — OneShop Admin'}">Sản Phẩm</title>
+</head>
+<body>
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold m-0 text-dark" th:text="${product.id == null ? 'Thêm mới mỹ phẩm' : 'Chỉnh sửa sản phẩm #' + product.id}">Sản phẩm</h3>
+                <p class="text-muted small m-0">Điền thông tin chi tiết, định giá và tải ảnh mỹ phẩm</p>
+            </div>
+            <a th:href="@{/admin/products}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+            </a>
+        </div>
+
+        <div class="admin-card p-4">
+            <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert" th:if="${errorMessage}">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span th:text="${errorMessage}">Đã xảy ra lỗi</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert" th:if="${successMessage}">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <span th:text="${successMessage}">Thành công</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <form th:action="@{/admin/products/save}" th:object="${product}" method="post" enctype="multipart/form-data">
+                <input type="hidden" th:field="*{id}">
+
+                <div class="row g-3 mb-4">
+                    <!-- Name -->
+                    <div class="col-md-8">
+                        <label class="form-label fw-bold small">Tên sản phẩm mỹ phẩm <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" th:field="*{name}" required>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                    </div>
+
+                    <!-- SKU -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">Mã SKU (Duy nhất) <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" th:field="*{sku}" required>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('sku')}" th:errors="*{sku}"></div>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Danh mục <span class="text-danger">*</span></label>
+                        <select class="form-select" th:field="*{category.id}" required>
+                            <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}">Category</option>
+                        </select>
+                    </div>
+
+                    <!-- Brand -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Thương hiệu <span class="text-danger">*</span></label>
+                        <select class="form-select" th:field="*{brand.id}" required>
+                            <option th:each="b : ${brands}" th:value="${b.id}" th:text="${b.name}">Brand</option>
+                        </select>
+                    </div>
+
+                    <!-- Price -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Giá bán thực tế (VNĐ) <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" th:field="*{price}" min="0" step="1000" required>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>
+                    </div>
+
+                    <!-- Compare At Price -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Giá so sánh / Giá gốc gạch ngang (VNĐ)</label>
+                        <input type="number" class="form-control" th:field="*{compareAtPrice}" min="0" step="1000">
+                    </div>
+
+                    <!-- Multiple Image Upload -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small"><i class="bi bi-images text-danger me-1"></i> Hình ảnh sản phẩm (Tải lên từ thiết bị)</label>
+                        <input type="file" name="imageFiles" id="imageFilesInput" class="form-control" accept="image/*" multiple>
+                    </div>
+
+                    <!-- Multiple Image URLs Fallback -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small"><i class="bi bi-link-45deg text-primary me-1"></i> Hoặc nhập URL nhiều hình ảnh</label>
+                        <textarea name="imageUrlsInput" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <!-- Live Preview for newly selected files -->
+                    <div id="newImagesPreviewContainer" class="col-12 d-none">
+                        <label class="form-label fw-bold small text-primary"><i class="bi bi-eye me-1"></i> Xem trước các ảnh mới chuẩn bị tải lên:</label>
+                        <div id="newImagesPreviewGrid" class="d-flex flex-wrap gap-2 p-2 bg-light rounded-3 border"></div>
+                    </div>
+
+                    <!-- Current Images Gallery (if editing) -->
+                    <div class="col-12" th:if="${product.id != null and productImages != null and not #lists.isEmpty(productImages)}">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label fw-bold small m-0"><i class="bi bi-images text-dark me-1"></i> Danh sách hình ảnh của sản phẩm (<span th:text="${#lists.size(productImages)}">0</span> ảnh):</label>
+                            <small class="text-muted">Ảnh có nhãn đỏ là ảnh đại diện chính hiển thị đầu tiên</small>
+                        </div>
+                        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-2 p-2 bg-light rounded-3 border">
+                            <div class="col" th:each="img : ${productImages}">
+                                <div class="card h-100 border position-relative overflow-hidden shadow-sm">
+                                    <span th:if="${img.isPrimary}" class="badge bg-danger position-absolute top-0 start-0 m-1" style="font-size: 0.7rem; z-index: 2;">
+                                        <i class="bi bi-star-fill"></i> Ảnh chính
+                                    </span>
+                                    <div style="height: 120px; background: #fff;" class="d-flex align-items-center justify-content-center overflow-hidden">
+                                        <img th:src="${img.secureUrl}" class="img-fluid" style="max-height: 120px; object-fit: contain;" onerror="this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&q=80'">
+                                    </div>
+                                    <div class="card-footer p-1 bg-white border-top d-flex justify-content-center gap-1">
+                                        <button th:if="${!img.isPrimary}" type="submit"
+                                                th:formaction="@{'/admin/products/' + ${product.id} + '/images/' + ${img.id} + '/set-primary'}"
+                                                formmethod="post" formnovalidate class="btn btn-outline-warning btn-sm py-0 px-2" title="Đặt làm ảnh chính"
+                                                onclick="return confirm('Đặt ảnh này làm ảnh đại diện chính?');">
+                                            <i class="bi bi-star"></i> Đặt chính
+                                        </button>
+                                        <button type="submit"
+                                                th:formaction="@{'/admin/products/' + ${product.id} + '/images/' + ${img.id} + '/delete'}"
+                                                formmethod="post" formnovalidate class="btn btn-outline-danger btn-sm py-0 px-2" title="Xóa ảnh này"
+                                                onclick="return confirm('Bạn có chắc muốn xóa ảnh này khỏi sản phẩm?');">
+                                            <i class="bi bi-trash"></i> Xóa
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Initial Inventory Stock (When creating new product) -->
+                    <div class="col-12" th:if="${product.id == null}">
+                        <div class="p-3 rounded-3 border border-primary-subtle bg-light">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <i class="bi bi-boxes text-primary fs-5"></i>
+                                <h6 class="fw-bold text-dark m-0">Số lượng sản phẩm tồn kho ban đầu</h6>
+                                <span class="badge bg-primary text-white">Quản lý kho chi nhánh</span>
+                            </div>
+                            <p class="text-muted small mb-3">Nhập số lượng hàng có sẵn để hệ thống tự động phân bổ vào kho của chuỗi chi nhánh, giúp khách hàng có thể đặt mua ngay lập tức.</p>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small">Số lượng nhập kho ban đầu <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <input type="number" name="initialQuantity" class="form-control" value="50" min="1" max="99999" required>
+                                        <span class="input-group-text bg-white">sản phẩm</span>
+                                    </div>
+                                    <small class="text-muted">Mặc định: 50 sản phẩm.</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small">Phân bổ tới chi nhánh nào?</label>
+                                    <select name="targetBranchId" class="form-select">
+                                        <option value="">-- Phân bổ cho TẤT CẢ chi nhánh (Mỗi chi nhánh có số lượng trên) --</option>
+                                        <option th:each="b : ${branches}" th:value="${b.id}" th:text="${b.name + ' (' + b.address + ')'}">Chi nhánh</option>
+                                    </select>
+                                    <small class="text-muted">Khuyên dùng phân bổ cho tất cả chi nhánh.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Inventory Stock (When editing product) -->
+                    <div class="col-12" th:if="${product.id != null}">
+                        <div class="p-3 rounded-3 border bg-light">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold text-dark m-0"><i class="bi bi-box-seam text-danger me-1"></i> Tồn kho tại các chi nhánh hiện tại</h6>
+                                <a th:href="@{/admin/inventory}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil-square me-1"></i> Vào trang quản lý tồn kho</a>
+                            </div>
+                            <div class="table-responsive" th:if="${branchStocks != null and not #lists.isEmpty(branchStocks)}">
+                                <table class="table table-sm table-bordered bg-white mb-0 align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Chi nhánh</th>
+                                            <th class="text-center" style="width: 140px;">Tồn thực tế</th>
+                                            <th class="text-center" style="width: 140px;">Khách đã giữ</th>
+                                            <th class="text-center" style="width: 140px;">Khả dụng bán</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="stk : ${branchStocks}">
+                                            <td class="fw-semibold" th:text="${stk.branch.name}">Chi nhánh</td>
+                                            <td class="text-center" th:text="${stk.quantityOnHand}">0</td>
+                                            <td class="text-center text-muted" th:text="${stk.quantityReserved}">0</td>
+                                            <td class="text-center fw-bold text-success" th:text="${stk.getAvailableQuantity()}">0</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Short Description -->
+                    <div class="col-12">
+                        <label class="form-label fw-bold small">Mô tả tóm tắt</label>
+                        <textarea class="form-control" rows="2" th:field="*{shortDescription}"></textarea>
+                    </div>
+
+                    <!-- Full Description -->
+                    <div class="col-12">
+                        <label class="form-label fw-bold small">Mô tả chi tiết công dụng</label>
+                        <textarea class="form-control" rows="4" th:field="*{description}"></textarea>
+                    </div>
+
+                    <!-- Ingredients -->
+                    <div class="col-12">
+                        <label class="form-label fw-bold small">Thành phần chi tiết</label>
+                        <textarea class="form-control" rows="2" th:field="*{ingredients}"></textarea>
+                    </div>
+
+                    <!-- How to use -->
+                    <div class="col-12">
+                        <label class="form-label fw-bold small">Hướng dẫn sử dụng</label>
+                        <textarea class="form-control" rows="2" th:field="*{howToUse}"></textarea>
+                    </div>
+
+                    <!-- Checkboxes -->
+                    <div class="col-md-6">
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" role="switch" id="isFeatured" th:field="*{isFeatured}">
+                            <label class="form-check-label fw-bold small" for="isFeatured">Đặt làm sản phẩm Nổi bật / Bán chạy</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" role="switch" id="activeStatus" th:field="*{active}">
+                            <label class="form-check-label fw-bold small" for="activeStatus">Kích hoạt kinh doanh (Hiển thị cho khách)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                    <a th:href="@{/admin/products}" class="btn btn-secondary">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-danger px-4">
+                        <i class="bi bi-save me-1"></i> Lưu sản phẩm
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const fileInput = document.getElementById('imageFilesInput');
+        const previewContainer = document.getElementById('newImagesPreviewContainer');
+        const previewGrid = document.getElementById('newImagesPreviewGrid');
+
+        if (fileInput && previewContainer && previewGrid) {
+            fileInput.addEventListener('change', function () {
+                previewGrid.innerHTML = '';
+                const files = this.files;
+                if (!files || files.length === 0) {
+                    previewContainer.classList.add('d-none');
+                    return;
+                }
+
+                previewContainer.classList.remove('d-none');
+                Array.from(files).forEach((file, index) => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            const col = document.createElement('div');
+                            col.className = 'position-relative border rounded p-1 bg-white shadow-sm';
+                            col.style.width = '100px';
+                            col.style.height = '100px';
+                            col.innerHTML = `
+                                <img src="${e.target.result}" class="w-100 h-100 rounded" style="object-fit: cover;">
+                                <span class="badge bg-dark position-absolute bottom-0 start-0 m-1 opacity-75 small" style="font-size: 0.65rem;">#${index + 1}</span>
+                            `;
+                            previewGrid.appendChild(col);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            });
+        }
+    });
+</script>
+</body>
+</html>

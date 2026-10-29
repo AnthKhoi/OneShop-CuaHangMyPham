@@ -136,15 +136,4 @@ public class OtpService {
                 .map(otp -> Boolean.TRUE.equals(otp.getVerified()) && !otp.isExpired() && !Boolean.TRUE.equals(otp.getConsumed()))
                 .orElse(false);
     }
-
-    @Transactional(readOnly = true)
-    public Optional<String> getLatestActiveOtp(String email, OtpType type) {
-        if (email == null || email.isBlank()) {
-            return Optional.empty();
-        }
-        String cleanEmail = email.trim().toLowerCase();
-        return otpRepository.findTopByEmailIgnoreCaseAndTypeOrderByCreatedAtDesc(cleanEmail, type)
-                .filter(otp -> !Boolean.TRUE.equals(otp.getVerified()) && !otp.isExpired())
-                .map(OtpVerification::getOtpCode);
-    }
 }

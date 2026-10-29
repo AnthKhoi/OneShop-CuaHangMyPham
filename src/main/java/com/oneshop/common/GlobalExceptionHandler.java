@@ -10,13 +10,6 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
-    public String handleResourceNotFound(org.springframework.web.servlet.resource.NoResourceFoundException ex, Model model) {
-        model.addAttribute("errorCode", "404");
-        model.addAttribute("errorMessage", "Không tìm thấy tài nguyên yêu cầu.");
-        return "error/404";
-    }
-
     @ExceptionHandler(NoHandlerFoundException.class)
     public String handleNotFound(NoHandlerFoundException ex, Model model) {
         log.warn("Page not found: {}", ex.getRequestURL());

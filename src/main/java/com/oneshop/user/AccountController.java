@@ -20,7 +20,6 @@ public class AccountController {
 
     private final OrderService orderService;
     private final UserRepository userRepository;
-    private final com.oneshop.customer.ProductReviewRepository productReviewRepository;
 
     @GetMapping
     public String profile(Model model) {
@@ -87,18 +86,7 @@ public class AccountController {
             throw new AccessDeniedException("Bạn không có quyền xem đơn hàng này");
         }
 
-        java.util.Map<Long, com.oneshop.customer.ProductReview> reviewedMap = new java.util.HashMap<>();
-        if (userId != null && order.getItems() != null) {
-            for (com.oneshop.order.OrderItem item : order.getItems()) {
-                if (item.getProduct() != null) {
-                    productReviewRepository.findByUserIdAndProductId(userId, item.getProduct().getId())
-                            .ifPresent(r -> reviewedMap.put(item.getProduct().getId(), r));
-                }
-            }
-        }
-
         model.addAttribute("order", order);
-        model.addAttribute("reviewedMap", reviewedMap);
         return "store/account/order-detail";
     }
 

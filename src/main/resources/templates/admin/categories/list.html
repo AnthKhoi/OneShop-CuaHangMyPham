@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Quản Lý Danh Mục — OneShop Admin</title>
+</head>
+<body>
+<div class="row g-4">
+    <!-- Categories Table -->
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="fw-bold m-0 text-dark">Danh mục mỹ phẩm</h4>
+            <span class="text-muted small">Tổng: <strong th:text="${#lists.size(categories)}">0</strong> danh mục</span>
+        </div>
+
+        <div class="admin-card">
+            <div class="table-responsive">
+                <table class="table admin-table align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">Ảnh</th>
+                            <th>Tên danh mục</th>
+                            <th>Slug</th>
+                            <th>Mô tả</th>
+                            <th>Trạng thái</th>
+                            <th class="text-end" style="width: 110px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="cat : ${categories}">
+                            <td>
+                                <img th:if="${cat.imageUrl != null and not #strings.isEmpty(cat.imageUrl)}"
+                                     th:src="${cat.imageUrl}" th:alt="${cat.name}" class="rounded-2 border" style="width: 44px; height: 44px; object-fit: cover;"
+                                     onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&q=80';">
+                                <div th:unless="${cat.imageUrl != null and not #strings.isEmpty(cat.imageUrl)}"
+                                     class="rounded-2 border bg-light d-flex align-items-center justify-content-center text-muted"
+                                     style="width: 44px; height: 44px; font-size: 16px;">
+                                    <i class="bi bi-grid"></i>
+                                </div>
+                            </td>
+                            <td>
+                                <strong class="text-dark" th:text="${cat.name}">Danh mục</strong>
+                            </td>
+                            <td><code th:text="${cat.slug}">slug</code></td>
+                            <td class="text-muted small text-truncate" style="max-width: 200px;" th:text="${cat.description}">Mô tả...</td>
+                            <td>
+                                <span class="badge" th:classappend="${cat.active ? 'bg-success' : 'bg-secondary'}" th:text="${cat.active ? 'Hoạt động' : 'Tắt'}">Trạng thái</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-primary btn-edit-category"
+                                            th:data-id="${cat.id}"
+                                            th:data-name="${cat.name}"
+                                            th:data-slug="${cat.slug}"
+                                            th:data-image-url="${cat.imageUrl}"
+                                            th:data-description="${cat.description}"
+                                            th:data-active="${cat.active}"
+                                            title="Chỉnh sửa danh mục">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                    <form th:action="@{'/admin/categories/' + ${cat.id} + '/delete'}" method="post" class="d-inline"
+                                          onsubmit="return confirm('Bạn có chắc chắn muốn xóa danh mục này không? Các sản phẩm thuộc danh mục này phải được chuyển trước khi xóa.');">
+                                        <button type="submit" class="btn btn-outline-danger" title="Xóa danh mục">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(categories)}">
+                            <td colspan="6" class="text-center py-4 text-muted">Chưa có danh mục nào. Hãy tạo danh mục đầu tiên!</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create / Edit Form Card -->
+    <div class="col-lg-4">
+        <div class="admin-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold m-0" th:text="${editCategory != null ? 'Chỉnh sửa danh mục' : 'Thêm mới danh mục'}">
+                    <i class="bi bi-plus-circle text-danger me-2"></i>Thêm mới danh mục
+                </h5>
+                <a th:if="${editCategory != null}" th:href="@{/admin/categories}" class="btn btn-sm btn-outline-secondary">Hủy bỏ</a>
+            </div>
+
+            <form th:action="@{/admin/categories/save}" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="id" th:value="${editCategory != null ? editCategory.id : ''}">
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Tên danh mục <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="name" th:value="${editCategory != null ? editCategory.name : ''}" placeholder="Ví dụ: Chăm sóc vùng mắt" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Slug URL (tùy chọn)</label>
+                    <input type="text" class="form-control" name="slug" th:value="${editCategory != null ? editCategory.slug : ''}" placeholder="cham-soc-vung-mat">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold"><i class="bi bi-upload text-danger me-1"></i> Tải ảnh danh mục lên</label>
+                    <input type="file" class="form-control" name="imageFile" accept="image/*">
+                    <small class="text-muted">Chọn ảnh minh họa danh mục từ máy tính (PNG, JPG, WEBP).</small>
+                    <div class="mt-2 d-flex align-items-center gap-2 p-2 bg-light rounded border" th:if="${editCategory != null and editCategory.imageUrl != null and not #strings.isEmpty(editCategory.imageUrl)}">
+                        <img th:src="${editCategory.imageUrl}" alt="Current image" class="rounded border bg-white" style="width: 44px; height: 44px; object-fit: cover;">
+                        <small class="text-muted">Ảnh danh mục hiện tại</small>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Mô tả danh mục</label>
+                    <textarea class="form-control" rows="2" name="description" placeholder="Mô tả tóm tắt..." th:text="${editCategory != null ? editCategory.description : ''}"></textarea>
+                </div>
+                <div class="mb-3" th:if="${editCategory != null}">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="activeCategorySide" name="active" value="true" th:checked="${editCategory.active}">
+                        <label class="form-check-label small fw-bold" for="activeCategorySide">Kích hoạt danh mục</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-danger w-100 py-2">
+                    <i class="bi bi-save me-1"></i> <span th:text="${editCategory != null ? 'Cập nhật danh mục' : 'Lưu danh mục'}">Lưu danh mục</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Chỉnh Sửa Danh Mục (Quick Edit Modal) -->
+<div class="modal fade" id="categoryEditModal" tabindex="-1" aria-labelledby="categoryEditModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold text-dark" id="categoryEditModalLabel">
+                    <i class="bi bi-pencil-square text-danger me-2"></i>Chỉnh sửa danh mục
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form th:action="@{/admin/categories/save}" method="post" enctype="multipart/form-data">
+                <div class="modal-body p-4">
+                    <input type="hidden" id="modalCatId" name="id">
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Tên danh mục <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="modalCatName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Slug URL</label>
+                        <input type="text" class="form-control" id="modalCatSlug" name="slug">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold"><i class="bi bi-upload text-danger me-1"></i> Tải ảnh danh mục mới</label>
+                        <input type="file" class="form-control" id="modalCatImageFile" name="imageFile" accept="image/*">
+                        <small class="text-muted">Chọn tệp ảnh mới để thay đổi (để trống nếu muốn giữ nguyên ảnh hiện tại).</small>
+                        <div id="modalCatCurrentImgWrapper" class="mt-2 d-flex align-items-center gap-2 p-2 bg-light rounded border d-none">
+                            <img id="modalCatCurrentImg" src="" alt="Current image" class="rounded border bg-white" style="width: 44px; height: 44px; object-fit: cover;">
+                            <span class="small text-muted">Ảnh hiện đang sử dụng</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Mô tả</label>
+                        <textarea class="form-control" id="modalCatDesc" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="modalCatActive" name="active" value="true">
+                            <label class="form-check-label small fw-bold" for="modalCatActive">Kích hoạt hoạt động</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-danger px-4">
+                        <i class="bi bi-save me-1"></i> Cập nhật thay đổi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modalEl = document.getElementById('categoryEditModal');
+        const modal = new bootstrap.Modal(modalEl);
+
+        document.querySelectorAll('.btn-edit-category').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.getElementById('modalCatId').value = this.getAttribute('data-id') || '';
+                document.getElementById('modalCatName').value = this.getAttribute('data-name') || '';
+                document.getElementById('modalCatSlug').value = this.getAttribute('data-slug') || '';
+                document.getElementById('modalCatDesc').value = this.getAttribute('data-description') || '';
+                const active = this.getAttribute('data-active') === 'true';
+                document.getElementById('modalCatActive').checked = active;
+
+                // Handle current image preview in modal
+                const imgUrl = this.getAttribute('data-image-url');
+                const imgWrapper = document.getElementById('modalCatCurrentImgWrapper');
+                const imgEl = document.getElementById('modalCatCurrentImg');
+                if (imgUrl && imgUrl.trim() !== '') {
+                    imgEl.src = imgUrl;
+                    imgWrapper.classList.remove('d-none');
+                } else {
+                    imgWrapper.classList.add('d-none');
+                }
+
+                // Reset file input
+                document.getElementById('modalCatImageFile').value = '';
+
+                modal.show();
+            });
+        });
+    });
+</script>
+</body>
+</html>

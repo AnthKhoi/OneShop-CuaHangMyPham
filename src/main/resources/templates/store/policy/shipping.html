@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Chính Sách Vận Chuyển & Giao Hàng — OneShop Beauty</title>
+</head>
+<body>
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/}" class="text-decoration-none text-muted"><i class="bi bi-house-door"></i> Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Vận chuyển & Giao hàng</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header Banner -->
+            <div class="bg-gradient p-4 p-md-5 rounded-4 text-white mb-4" style="background: linear-gradient(135deg, #028090 0%, #00a896 100%);">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="p-3 bg-white bg-opacity-25 rounded-circle fs-1">
+                        <i class="bi bi-truck"></i>
+                    </div>
+                    <div>
+                        <h2 class="fw-bold m-0">Vận Chuyển & Giao Hàng</h2>
+                        <p class="m-0 text-white-50 mt-1">Giao hàng hỏa tốc nội thành - Miễn phí vận chuyển từ 2 chi nhánh</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Card -->
+            <div class="bg-white p-4 p-md-5 rounded-4 border shadow-sm">
+                <!-- Highlight Box -->
+                <div class="alert alert-success d-flex align-items-center gap-3 rounded-4 p-3 mb-4">
+                    <i class="bi bi-stars fs-1 text-success"></i>
+                    <div>
+                        <h6 class="fw-bold m-0 text-success">Ưu đãi vận chuyển đặc quyền tại OneShop:</h6>
+                        <span class="small">Toàn bộ đơn hàng thuộc khu vực <strong>Nội thành TP. Hồ Chí Minh</strong> (bao gồm Quận 1 và TP. Thủ Đức) đều được <strong>MIỄN PHÍ VẬN CHUYỂN 100%</strong> và giao nhanh từ 2 - 4 giờ!</span>
+                    </div>
+                </div>
+
+                <section class="mb-5">
+                    <h4 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                        <i class="bi bi-geo-alt-fill text-danger me-2"></i>1. Biểu phí và thời gian giao hàng
+                    </h4>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Khu vực giao hàng</th>
+                                    <th>Phạm vi áp dụng</th>
+                                    <th class="text-center">Cước phí</th>
+                                    <th class="text-center">Thời gian dự kiến</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold text-success">
+                                        <i class="bi bi-check-circle-fill text-success me-1"></i> Nội thành TP. HCM
+                                    </td>
+                                    <td>Quận 1, TP. Thủ Đức, Quận 3, Quận 4, Quận 5, Quận 6, Quận 7, Quận 8, Quận 10, Quận 11, Phú Nhuận, Bình Thạnh, Gò Vấp, Tân Bình, Tân Phú</td>
+                                    <td class="text-center fw-bold text-success">MIỄN PHÍ (0₫)</td>
+                                    <td class="text-center"><span class="badge bg-success">Siêu tốc 2 - 4 giờ</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-primary">
+                                        <i class="bi bi-truck text-primary me-1"></i> Ngoại thành TP. HCM
+                                    </td>
+                                    <td>Hóc Môn, Bình Chánh, Củ Chi, Nhà Bè, Cần Giờ, Quận 12, Bình Tân</td>
+                                    <td class="text-center fw-bold">25.000₫ <small class="text-muted d-block">(Freeship đơn từ 500k)</small></td>
+                                    <td class="text-center"><span class="badge bg-primary">Trong ngày hoặc 24h</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-dark">
+                                        <i class="bi bi-airplane text-dark me-1"></i> Các tỉnh thành khác
+                                    </td>
+                                    <td>Hà Nội, Đà Nẵng, Cần Thơ, Hải Phòng, Bình Dương, Đồng Nai và toàn bộ 63 tỉnh thành</td>
+                                    <td class="text-center fw-bold">35.000₫ <small class="text-muted d-block">(Freeship đơn từ 500k)</small></td>
+                                    <td class="text-center"><span class="badge bg-secondary">2 - 3 ngày làm việc</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-danger">
+                                        <i class="bi bi-shop text-danger me-1"></i> Nhận tại cửa hàng (Pickup)
+                                    </td>
+                                    <td>
+                                        • Chi nhánh 1: 120 Hai Bà Trưng, P. Bến Nghé, Quận 1, TP. HCM<br>
+                                        • Chi nhánh 2: 216 Võ Văn Ngân, P. Linh Chiểu, TP. Thủ Đức, TP. HCM
+                                    </td>
+                                    <td class="text-center fw-bold text-success">MIỄN PHÍ (0₫)</td>
+                                    <td class="text-center"><span class="badge bg-danger">Có hàng sau 30 phút</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="mb-5">
+                    <h4 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                        <i class="bi bi-box2-fill text-danger me-2"></i>2. Quy chuẩn đóng gói mỹ phẩm cao cấp
+                    </h4>
+                    <p class="text-secondary leading-relaxed">
+                        Mỹ phẩm là mặt hàng nhạy cảm với nhiệt độ và dễ vỡ khi va chạm. OneShop áp dụng quy chuẩn đóng gói chuyên nghiệp 3 lớp:
+                    </p>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <h6 class="fw-bold text-dark"><i class="bi bi-layers-fill text-primary me-1"></i> Lớp 1: Bọc màng xốp khí</h6>
+                                <p class="small text-muted m-0">Từng chai lọ serum, kem dưỡng hay nước hoa được bọc kín từ 2-3 lớp bubble wrap giảm chấn.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <h6 class="fw-bold text-dark"><i class="bi bi-box-fill text-primary me-1"></i> Lớp 2: Hộp carton chịu lực</h6>
+                                <p class="small text-muted m-0">Đóng vào thùng carton cứng 3 lớp chuẩn sóng E/B, chèn mút cố định tránh rung lắc.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <h6 class="fw-bold text-dark"><i class="bi bi-patch-check-fill text-primary me-1"></i> Lớp 3: Tem niêm phong</h6>
+                                <p class="small text-muted m-0">Dán băng keo thương hiệu OneShop cùng tem vỡ chống cạy mở trước khi bàn giao cho bưu tá.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="mb-4">
+                    <h4 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                        <i class="bi bi-search text-danger me-2"></i>3. Kiểm tra hàng khi nhận (Đồng kiểm)
+                    </h4>
+                    <p class="text-secondary leading-relaxed">
+                        OneShop khuyến khích quý khách <strong>kiểm tra ngoại quan sản phẩm</strong> cùng bưu tá trước khi thanh toán tiền mặt (COD). Nếu phát hiện hộp bị rách nát, bể vỡ hoặc sai loại sản phẩm, quý khách hoàn toàn có quyền từ chối nhận hàng và liên hệ ngay Hotline: <a href="tel:0349846114" class="fw-bold text-danger">0349846114</a> để được hỗ trợ gửi đơn mới ngay trong ngày!
+                    </p>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

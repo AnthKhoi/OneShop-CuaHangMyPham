@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Bảng Điều Khiển — OneShop Operations</title>
+</head>
+<body>
+<div>
+    <!-- Top Action / Title -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h3 class="fw-bold m-0 text-dark" th:text="${currentUser != null and currentUser.isAdmin() ? 'Tổng quan hoạt động chuỗi cửa hàng' : ('Tổng quan kinh doanh — ' + (currentUser != null and currentUser.branchName != null ? currentUser.branchName : 'Chi nhánh'))}">Tổng quan hoạt động chuỗi cửa hàng</h3>
+            <p class="text-muted small m-0" th:text="${currentUser != null and currentUser.isAdmin() ? 'Số liệu kinh doanh thời gian thực cập nhật từ cơ sở dữ liệu toàn chuỗi OneShop' : ('Số liệu kinh doanh riêng biệt của ' + (currentUser != null and currentUser.branchName != null ? currentUser.branchName : 'chi nhánh'))}">Số liệu kinh doanh thời gian thực cập nhật từ cơ sở dữ liệu OneShop</p>
+        </div>
+
+        <!-- Branch Selector Filter (Admin only) -->
+        <div class="d-flex align-items-center gap-2" th:if="${currentUser != null and currentUser.isAdmin()}">
+            <label class="small text-muted text-nowrap fw-bold"><i class="bi bi-filter me-1"></i>Lọc chi nhánh:</label>
+            <select class="form-select form-select-sm" style="width: 240px;" onchange="location = '/admin?branchId=' + this.value;">
+                <option value="" th:selected="${selectedBranchId == null}">Tất cả chi nhánh toàn quốc</option>
+                <option th:each="b : ${branches}" th:value="${b.id}" th:text="${b.name}" th:selected="${selectedBranchId == b.id}">Chi nhánh</option>
+            </select>
+        </div>
+        <!-- Branch Manager locked branch indicator -->
+        <div class="d-flex align-items-center gap-2" th:if="${currentUser != null and !currentUser.isAdmin()}">
+            <span class="badge bg-danger-subtle text-danger px-3 py-2 fs-6 rounded-pill border border-danger-subtle">
+                <i class="bi bi-geo-alt-fill me-1"></i> Chi nhánh phân công: <strong th:text="${currentUser.branchName}">OneShop Quận 1</strong>
+            </span>
+        </div>
+    </div>
+
+    <!-- 4 Metric Cards -->
+    <div class="row g-4 mb-4">
+        <!-- Revenue -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="admin-stat-card">
+                <div>
+                    <div class="admin-stat-label">Tổng doanh thu</div>
+                    <div class="admin-stat-value text-success" th:text="${#numbers.formatDecimal(stats.totalRevenue, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</div>
+                    <small class="text-muted">Đơn đã hoàn tất</small>
+                </div>
+                <div class="admin-stat-icon icon-revenue">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Orders -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="admin-stat-card">
+                <div>
+                    <div class="admin-stat-label">Tổng đơn hàng</div>
+                    <div class="admin-stat-value text-primary" th:text="${stats.totalOrders}">0</div>
+                    <small class="text-muted"><span th:text="${stats.completedOrders}">0</span> hoàn tất | <span th:text="${stats.cancelledOrders}">0</span> hủy</small>
+                </div>
+                <div class="admin-stat-icon icon-orders">
+                    <i class="bi bi-receipt-cutoff"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Average Order Value (AOV) -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="admin-stat-card">
+                <div>
+                    <div class="admin-stat-label">Giá trị đơn TB</div>
+                    <div class="admin-stat-value text-danger" th:text="${#numbers.formatDecimal(stats.averageOrderValue, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</div>
+                    <small class="text-muted">AOV trung bình</small>
+                </div>
+                <div class="admin-stat-icon icon-aov">
+                    <i class="bi bi-bar-chart-line-fill"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Stock Alerts -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="admin-stat-card">
+                <div>
+                    <div class="admin-stat-label">Cảnh báo tồn thấp</div>
+                    <div class="admin-stat-value text-danger" th:text="${stats.lowStockCount}">0</div>
+                    <small class="text-muted">Dưới ngưỡng tối thiểu</small>
+                </div>
+                <div class="admin-stat-icon icon-alert">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Operations & Recent Orders Grid -->
+    <div class="row g-4 mb-4">
+        <!-- Recent Orders Table -->
+        <div class="col-lg-8">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h6 class="admin-card-title"><i class="bi bi-clock-history me-2 text-primary"></i>Đơn hàng mới nhất</h6>
+                    <a th:href="@{/admin/orders}" class="btn btn-sm btn-outline-dark">Xem tất cả &raquo;</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table admin-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Mã đơn</th>
+                                <th>Khách hàng</th>
+                                <th>Chi nhánh</th>
+                                <th>Tổng tiền</th>
+                                <th>Trạng thái</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="order : ${stats.recentOrders}">
+                                <td>
+                                    <strong class="text-danger" th:text="${order.orderCode}">OS-001</strong>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold" th:text="${order.recipientName}">Khách hàng</div>
+                                    <small class="text-muted" th:text="${order.recipientPhone}">SĐT</small>
+                                </td>
+                                <td th:text="${order.branch.name}">Chi nhánh</td>
+                                <td>
+                                    <strong class="text-dark" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</strong>
+                                </td>
+                                <td>
+                                    <span class="badge" th:classappend="${order.status.name() == 'COMPLETED' ? 'bg-success' : (order.status.name() == 'CANCELLED' ? 'bg-danger' : 'bg-warning text-dark')}" th:text="${order.status.description}">Trạng thái</span>
+                                </td>
+                                <td class="text-end">
+                                    <a th:href="@{'/admin/orders/' + ${order.id}}" class="btn btn-sm btn-light border">
+                                        Xử lý
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(stats.recentOrders)}">
+                                <td colspan="6" class="text-center py-4 text-muted">Chưa có đơn hàng nào phát sinh</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions & Alerts -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="admin-card mb-4">
+                <div class="p-3 d-grid gap-2">
+                    <a th:href="@{/admin/products/new}" class="btn btn-outline-dark text-start py-2">
+                        <i class="bi bi-plus-circle me-2 text-danger"></i> Thêm mỹ phẩm mới
+                    </a>
+                    <a th:href="@{/admin/inventory}" class="btn btn-outline-dark text-start py-2">
+                        <i class="bi bi-sliders me-2 text-primary"></i> Điều chỉnh tồn kho chi nhánh
+                    </a>
+                    <a th:href="@{/admin/inventory/low-stock}" class="btn btn-outline-danger text-start py-2">
+                        <i class="bi bi-exclamation-octagon me-2"></i> Xem <span th:text="${stats.lowStockCount}">0</span> sản phẩm sắp hết
+                    </a>
+                    <a th:href="@{/admin/categories}" class="btn btn-outline-dark text-start py-2">
+                        <i class="bi bi-tags me-2 text-success"></i> Quản lý danh mục & thương hiệu
+                    </a>
+                </div>
+            </div>
+
+            <!-- Expiry Batch Warning Alert -->
+            <div class="admin-card p-3 mb-4 border-warning" th:if="${stats.expiringBatchesCount > 0}">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="fw-bold text-warning-emphasis mb-1"><i class="bi bi-calendar-x-fill text-warning me-2"></i>Cảnh báo Hạn sử dụng (FEFO)</h6>
+                        <small class="text-muted">Có <strong class="text-danger" th:text="${stats.expiringBatchesCount}">0</strong> lô mỹ phẩm sắp hết hạn trong 30 ngày tới.</small>
+                    </div>
+                    <a th:href="@{/admin/inventory/expiring-batches}" class="btn btn-warning btn-sm">Xem chi tiết lô hàng</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Row: Top Selling Products & Revenue By Branch -->
+    <div class="row g-4">
+        <!-- Top Selling Products -->
+        <div th:classappend="${currentUser != null and !currentUser.isAdmin() ? 'col-12' : 'col-lg-6'}">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h6 class="admin-card-title"><i class="bi bi-trophy text-warning me-2"></i>Top 5 Sản phẩm bán chạy nhất</h6>
+                </div>
+                <div class="table-responsive">
+                    <table class="table admin-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th>Đã bán</th>
+                                <th class="text-end">Doanh số</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(stats.topSellingProducts)}">
+                                <td colspan="3" class="text-center py-4 text-muted">Chưa có dữ liệu bán hàng</td>
+                            </tr>
+                            <tr th:each="tp : ${stats.topSellingProducts}">
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img th:src="${tp.imageUrl != null and !#strings.isEmpty(tp.imageUrl) ? tp.imageUrl : 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=100&q=80'}" 
+                                             onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?w=100&q=80';"
+                                             class="rounded border" style="width: 36px; height: 36px; object-fit: cover;" alt="SP">
+                                        <div>
+                                            <strong class="d-block text-dark small" th:text="${tp.productName}">Tên SP</strong>
+                                            <small class="text-muted" th:text="${tp.sku}">SKU</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-primary fs-6 px-2 py-1" th:text="${tp.totalSold} + ' SP'">0 SP</span></td>
+                                <td class="text-end fw-bold text-danger" th:text="${#numbers.formatDecimal(tp.totalRevenue, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue By Branch (Global Admin Only) -->
+        <div class="col-lg-6" th:if="${currentUser != null and currentUser.isAdmin()}">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h6 class="admin-card-title"><i class="bi bi-building text-primary me-2"></i>Hiệu quả doanh thu theo chi nhánh</h6>
+                </div>
+                <div class="table-responsive">
+                    <table class="table admin-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Mã CN</th>
+                                <th>Chi nhánh</th>
+                                <th>Số đơn hoàn tất</th>
+                                <th class="text-end">Doanh thu đạt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(stats.branchRevenues)}">
+                                <td colspan="4" class="text-center py-4 text-muted">Chưa có doanh thu hoàn tất theo chi nhánh</td>
+                            </tr>
+                            <tr th:each="br : ${stats.branchRevenues}">
+                                <td><strong class="text-danger small" th:text="${br.branchCode}">CN-001</strong></td>
+                                <td class="small fw-semibold text-dark" th:text="${br.branchName}">Tên chi nhánh</td>
+                                <td><span class="badge bg-secondary" th:text="${br.orderCount} + ' đơn'">0 đơn</span></td>
+                                <td class="text-end fw-bold text-success" th:text="${#numbers.formatDecimal(br.revenue, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

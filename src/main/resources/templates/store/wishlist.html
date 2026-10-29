@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Danh Sách Yêu Thích — OneShop</title>
+</head>
+<body>
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav py-3 bg-light border-bottom mb-4">
+        <div class="container">
+            <ol class="breadcrumb mb-0 small">
+                <li class="breadcrumb-item"><a th:href="@{/}" class="text-decoration-none text-muted">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/account}" class="text-decoration-none text-muted">Tài khoản</a></li>
+                <li class="breadcrumb-item active text-dark fw-semibold" aria-current="page">Danh sách yêu thích</li>
+            </ol>
+        </div>
+    </nav>
+
+    <main class="container mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold text-dark mb-1"><i class="bi bi-heart-fill text-danger me-2"></i>Sản Phẩm Yêu Thích</h3>
+                <p class="text-muted small mb-0">Các dòng mỹ phẩm bạn đã lưu lại để tham khảo và mua sắm.</p>
+            </div>
+            <a th:href="@{/products}" class="btn btn-outline-dark btn-sm rounded-pill px-3">
+                <i class="bi bi-bag-plus me-1"></i>Tiếp tục khám phá
+            </a>
+        </div>
+
+        <!-- Alerts -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i><span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Empty state -->
+        <div th:if="${#lists.isEmpty(items)}" class="card border-0 shadow-sm rounded-4 p-5 text-center my-4">
+            <div class="text-muted mb-3"><i class="bi bi-heartbreak text-danger fs-1"></i></div>
+            <h4 class="fw-bold text-dark mb-2">Danh sách yêu thích của bạn đang trống</h4>
+            <p class="text-secondary mb-4">Hãy bấm vào biểu tượng trái tim ở từng sản phẩm mỹ phẩm để lưu lại khi cần mua sắm nhé!</p>
+            <div>
+                <a th:href="@{/products}" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold">
+                    <i class="bi bi-sparkles me-2"></i>Khám phá mỹ phẩm ngay
+                </a>
+            </div>
+        </div>
+
+        <!-- Product grid -->
+        <div th:unless="${#lists.isEmpty(items)}" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            <div class="col" th:each="item : ${items}">
+                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative product-card">
+                    <!-- Nút xóa nhanh khỏi wishlist -->
+                    <form th:action="@{'/wishlist/remove/' + ${item.product.id}}" method="post" class="position-absolute top-0 end-0 m-2 z-2">
+                        <button type="submit" class="btn btn-light btn-sm rounded-circle shadow-sm text-danger p-2" title="Xóa khỏi yêu thích">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </form>
+
+                    <!-- Product image -->
+                    <a th:href="@{'/products/' + ${item.product.slug}}" class="ratio ratio-1x1 bg-light d-block overflow-hidden">
+                        <img th:src="${item.product.primaryImageUrl}" th:alt="${item.product.name}" class="card-img-top object-fit-cover w-100 h-100 transition-zoom">
+                    </a>
+
+                    <div class="card-body p-3 d-flex flex-column">
+                        <div class="small text-uppercase text-muted fw-semibold mb-1" th:text="${item.product.brand.name}">Brand</div>
+                        <h6 class="card-title fw-bold text-dark mb-2 line-clamp-2">
+                            <a th:href="@{'/products/' + ${item.product.slug}}" class="text-decoration-none text-dark" th:text="${item.product.name}">Tên sản phẩm mỹ phẩm</a>
+                        </h6>
+                        <div class="mt-auto pt-2">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="fw-bold fs-5 text-danger" th:text="${#numbers.formatDecimal(item.product.price, 0, 'POINT', 0, 'COMMA') + ' đ'}">350.000 đ</span>
+                            </div>
+
+                            <form th:action="@{/cart/add}" method="post">
+                                <input type="hidden" name="productId" th:value="${item.product.id}">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="btn btn-primary w-100 rounded-pill btn-sm py-2 fw-semibold">
+                                    <i class="bi bi-cart-plus me-1"></i>Thêm vào giỏ
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>

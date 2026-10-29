@@ -36,12 +36,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
            "AND (:brandId IS NULL OR p.brand.id = :brandId) " +
            "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
            "AND (:maxPrice IS NULL OR p.price <= :maxPrice) " +
-           "AND (:keyword IS NULL OR " +
-           "     LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "     LOWER(p.sku) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "     LOWER(p.category.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "     LOWER(p.brand.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "     (p.shortDescription IS NOT NULL AND LOWER(p.shortDescription) LIKE LOWER(CONCAT('%', :keyword, '%'))))")
+           "AND (:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(p.sku) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<Product> searchCatalog(
             @Param("keyword") String keyword,
             @Param("categoryId") Long categoryId,

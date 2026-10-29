@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Chính Sách Bảo Mật — OneShop Beauty</title>
+</head>
+<body>
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/}" class="text-decoration-none text-muted"><i class="bi bi-house-door"></i> Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Chính sách bảo mật</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header Banner -->
+            <div class="bg-gradient p-4 p-md-5 rounded-4 text-white mb-4" style="background: linear-gradient(135deg, #2b2d42 0%, #8d99ae 100%);">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="p-3 bg-white bg-opacity-25 rounded-circle fs-1">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                    <div>
+                        <h2 class="fw-bold m-0">Chính Sách Bảo Mật</h2>
+                        <p class="m-0 text-white-50 mt-1">Bảo vệ thông tin cá nhân và dữ liệu thanh toán của khách hàng là ưu tiên hàng đầu</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Card -->
+            <div class="bg-white p-4 p-md-5 rounded-4 border shadow-sm">
+                <section class="mb-5">
+                    <h4 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                        <i class="bi bi-person-badge-fill text-danger me-2"></i>1. Mục đích thu thập thông tin
+                    </h4>
+                    <p class="text-secondary leading-relaxed">
+                        OneShop Beauty thu thập thông tin cơ bản (Họ tên, Số điện thoại, Địa chỉ nhận hàng, Email) nhằm các mục đích minh bạch sau:
+                    </p>
+                    <ul class="text-secondary">
+                        <li class="mb-2">Xử lý và hoàn tất giao nhận đơn hàng mỹ phẩm tới tận tay quý khách.</li>
+                        <li class="mb-2">Gửi thông báo xác nhận đơn hàng, hóa đơn điện tử và mã vận đơn tra cứu bưu tá.</li>
+                        <li class="mb-2">Tích lũy điểm thành viên OneShop VIP và gửi tặng mã giảm giá độc quyền theo tháng sinh nhật.</li>
+                        <li class="mb-2">Giải quyết các khiếu nại, hỗ trợ kỹ thuật và đổi trả sản phẩm khi phát sinh sự cố.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-5">
+                    <h4 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                        <i class="bi bi-shield-check text-success me-2"></i>2. Phạm vi sử dụng & Cam kết không tiết lộ
+                    </h4>
+                    <p class="text-secondary leading-relaxed">
+                        Thông tin khách hàng chỉ được lưu hành nội bộ trong hệ thống OneShop Beauty và các đối tác bưu chính được chỉ định (để phục vụ việc giao hàng). OneShop <strong>cam kết tuyệt đối không bán, chia sẻ hoặc trao đổi thông tin khách hàng</strong> cho bất kỳ bên thứ ba nào vì mục đích thương mại.
+                    </p>
+                </section>
+
+                <section class="mb-5">
+                    <h4 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                        <i class="bi bi-lock-fill text-primary me-2"></i>3. Bảo mật thanh toán & Mật khẩu
+                    </h4>
+                    <p class="text-secondary leading-relaxed">
+                        Mật khẩu tài khoản của quý khách được mã hóa một chiều bằng thuật toán <strong>BCrypt độ an toàn cao</strong>. Mọi giao dịch chuyển khoản VietQR được đối soát mã số theo giao thức bảo mật của ngân hàng, OneShop không lưu trữ thông tin thẻ tín dụng nhạy cảm của khách hàng trên hệ thống.
+                    </p>
+                </section>
+
+                <section class="mb-4">
+                    <h4 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                        <i class="bi bi-envelope-check-fill text-danger me-2"></i>4. Quyền của khách hàng đối với dữ liệu
+                    </h4>
+                    <p class="text-secondary leading-relaxed">
+                        Quý khách có toàn quyền kiểm tra, cập nhật, điều chỉnh hoặc yêu cầu xóa bỏ tài khoản của mình bằng cách đăng nhập vào mục <a th:href="@{/account}" class="fw-bold text-danger">Tài khoản của tôi</a> hoặc liên hệ hotline <a href="tel:0349846114" class="fw-bold text-danger">0349846114</a> để được hỗ trợ.
+                    </p>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

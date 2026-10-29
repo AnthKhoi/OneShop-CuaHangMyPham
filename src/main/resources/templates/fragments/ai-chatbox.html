@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="ai-chatbox">
+    <!-- AI Chat Floating Button -->
+    <div id="aiChatLauncher" class="ai-chat-launcher" onclick="toggleAiChat()">
+        <div class="ai-launcher-icon">
+            <i class="bi bi-chat-heart-fill"></i>
+        </div>
+        <div class="ai-launcher-text">
+            <span>Tư vấn làm đẹp</span>
+            <span class="ai-online-dot"></span>
+        </div>
+    </div>
+
+    <!-- AI Chat Window Popup -->
+    <div id="aiChatWindow" class="ai-chat-window">
+        <!-- Header -->
+        <div class="ai-chat-header">
+            <div class="ai-header-info">
+                <div class="ai-avatar">
+                    <i class="bi bi-stars"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0 fw-bold">OneShop Beauty Advisor ✨</h6>
+                    <small class="text-white-50"><span class="ai-status-pulse"></span> Chuyên viên tư vấn sắc đẹp 24/7</small>
+                </div>
+            </div>
+            <button type="button" class="ai-close-btn" onclick="toggleAiChat()" aria-label="Đóng chat">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <!-- Suggestion Chips Bar -->
+        <div class="ai-quick-topics" id="aiQuickTopics">
+            <button type="button" class="ai-chip" onclick="sendAiQuickMessage('Địa chỉ 2 chi nhánh ở đâu?')">📍 Địa chỉ chi nhánh</button>
+            <button type="button" class="ai-chip" onclick="sendAiQuickMessage('Tư vấn da dầu mụn')">🌿 Da dầu mụn</button>
+            <button type="button" class="ai-chip" onclick="sendAiQuickMessage('Kem chống nắng tốt nhất')">☀️ Kem chống nắng</button>
+            <button type="button" class="ai-chip" onclick="sendAiQuickMessage('Phí giao hàng thế nào?')">🚚 Phí giao hàng</button>
+            <button type="button" class="ai-chip" onclick="sendAiQuickMessage('Có mã giảm giá nào không?')">🎁 Mã giảm giá</button>
+        </div>
+
+        <!-- Chat Message History -->
+        <div class="ai-chat-messages" id="aiChatMessages">
+            <!-- Initial AI Greeting -->
+            <div class="ai-msg ai-msg-bot">
+                <div class="ai-msg-avatar">
+                    <i class="bi bi-stars"></i>
+                </div>
+                <div class="ai-msg-bubble">
+                    <p class="mb-1"><strong>Xin chào bạn!</strong> Em là Chuyên viên tư vấn của OneShop Beauty 🌸</p>
+                    <p class="mb-0 text-muted" style="font-size: 0.85rem;">Em có thể giải đáp ngay về địa chỉ cửa hàng, chính sách freeship, các bước skincare khoa học hoặc gợi ý mỹ phẩm chính hãng phù hợp. Bạn cần hỗ trợ gì ạ?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Typing Indicator -->
+        <div class="ai-typing-indicator" id="aiTypingIndicator" style="display: none;">
+            <div class="ai-msg-avatar">
+                <i class="bi bi-stars"></i>
+            </div>
+            <div class="ai-typing-dots">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+
+        <!-- Input Footer -->
+        <form class="ai-chat-footer" id="aiChatForm" onsubmit="handleAiSubmit(event)">
+            <input type="text" id="aiChatInput" class="ai-chat-input" placeholder="Nhập câu hỏi (ví dụ: da dầu mụn dùng gì?)..." autocomplete="off" />
+            <button type="submit" class="ai-send-btn" id="aiSendBtn" aria-label="Gửi tin nhắn">
+                <i class="bi bi-send-fill"></i>
+            </button>
+        </form>
+    </div>
+
+    <!-- AI Chatbox Styles -->
+    <style>
+        .ai-chat-launcher {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1050;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #c7435b 0%, #e8637c 100%);
+            color: #ffffff;
+            padding: 10px 18px;
+            border-radius: 999px;
+            box-shadow: 0 8px 24px rgba(199, 67, 91, 0.4);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            user-select: none;
+        }
+        .ai-chat-launcher:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 12px 28px rgba(199, 67, 91, 0.55);
+        }
+        .ai-launcher-icon {
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            animation: aiSparkle 2s ease-in-out infinite;
+        }
+        @keyframes aiSparkle {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.15) rotate(15deg); }
+        }
+        .ai-launcher-text {
+            font-weight: 600;
+            font-size: 0.92rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .ai-online-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            box-shadow: 0 0 6px #22c55e;
+        }
+
+        .ai-chat-window {
+            position: fixed;
+            bottom: 84px;
+            right: 24px;
+            width: 380px;
+            max-width: calc(100vw - 32px);
+            height: 540px;
+            max-height: calc(100vh - 110px);
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(199, 67, 91, 0.12);
+            z-index: 1051;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            animation: aiSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes aiSlideUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .ai-chat-window.active {
+            display: flex;
+        }
+
+        .ai-chat-header {
+            background: linear-gradient(135deg, #b9374f 0%, #d85770 100%);
+            color: #ffffff;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ai-header-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .ai-avatar {
+            width: 38px;
+            height: 38px;
+            background: rgba(255, 255, 255, 0.22);
+            backdrop-filter: blur(4px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: #fff;
+        }
+        .ai-status-pulse {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            background: #4ade80;
+            border-radius: 50%;
+            margin-right: 4px;
+        }
+        .ai-close-btn {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 1.1rem;
+            opacity: 0.8;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 6px;
+            transition: opacity 0.2s;
+        }
+        .ai-close-btn:hover {
+            opacity: 1;
+        }
+
+        .ai-quick-topics {
+            display: flex;
+            gap: 6px;
+            padding: 10px 14px;
+            overflow-x: auto;
+            background: #fdf5f6;
+            border-bottom: 1px solid #fae1e5;
+            white-space: nowrap;
+            scrollbar-width: thin;
+        }
+        .ai-quick-topics::-webkit-scrollbar {
+            height: 4px;
+        }
+        .ai-chip {
+            background: #ffffff;
+            border: 1px solid #f1c7ce;
+            color: #b9374f;
+            border-radius: 999px;
+            padding: 4px 11px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .ai-chip:hover {
+            background: #c7435b;
+            color: #ffffff;
+            border-color: #c7435b;
+        }
+
+        .ai-chat-messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            background: #fbfbfb;
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+
+        .ai-msg {
+            display: flex;
+            gap: 10px;
+            max-width: 90%;
+        }
+        .ai-msg-avatar {
+            width: 28px;
+            height: 28px;
+            background: #f1c7ce;
+            color: #b9374f;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+        .ai-msg-bubble {
+            padding: 10px 14px;
+            border-radius: 14px;
+            word-break: break-word;
+        }
+        .ai-msg-bot .ai-msg-bubble {
+            background: #ffffff;
+            border: 1px solid #ebebeb;
+            color: #2b2b2b;
+            border-top-left-radius: 4px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
+        .ai-msg-user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        .ai-msg-user .ai-msg-bubble {
+            background: linear-gradient(135deg, #c7435b 0%, #d85770 100%);
+            color: #ffffff;
+            border-top-right-radius: 4px;
+            box-shadow: 0 2px 8px rgba(199, 67, 91, 0.25);
+        }
+
+        .ai-typing-indicator {
+            display: flex;
+            gap: 10px;
+            padding: 0 16px 10px 16px;
+            align-items: center;
+        }
+        .ai-typing-dots {
+            display: flex;
+            gap: 4px;
+            background: #ffffff;
+            border: 1px solid #ebebeb;
+            padding: 8px 14px;
+            border-radius: 14px;
+        }
+        .ai-typing-dots span {
+            width: 6px;
+            height: 6px;
+            background: #c7435b;
+            border-radius: 50%;
+            animation: aiBounce 1.4s infinite ease-in-out both;
+        }
+        .ai-typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .ai-typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes aiBounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+
+        .ai-chat-footer {
+            display: flex;
+            padding: 10px 12px;
+            background: #ffffff;
+            border-top: 1px solid #f0f0f0;
+            gap: 8px;
+            align-items: center;
+        }
+        .ai-chat-input {
+            flex: 1;
+            border: 1px solid #e2e8f0;
+            border-radius: 999px;
+            padding: 8px 16px;
+            font-size: 0.88rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .ai-chat-input:focus {
+            border-color: #c7435b;
+            box-shadow: 0 0 0 2px rgba(199, 67, 91, 0.15);
+        }
+        .ai-send-btn {
+            background: #c7435b;
+            color: #ffffff;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        .ai-send-btn:hover {
+            background: #a93247;
+        }
+        .ai-send-btn:disabled {
+            background: #e2e8f0;
+            cursor: not-allowed;
+        }
+    </style>
+
+    <!-- AI Chat JavaScript -->
+    <script>
+        function toggleAiChat() {
+            const win = document.getElementById('aiChatWindow');
+            if (!win) return;
+            const isVisible = win.classList.contains('active');
+            if (isVisible) {
+                win.classList.remove('active');
+            } else {
+                win.classList.add('active');
+                setTimeout(() => {
+                    const inp = document.getElementById('aiChatInput');
+                    if (inp) inp.focus();
+                }, 100);
+            }
+        }
+
+        function sendAiQuickMessage(text) {
+            const inp = document.getElementById('aiChatInput');
+            if (inp) {
+                inp.value = text;
+                handleAiSubmit(new Event('submit'));
+            }
+        }
+
+        async function handleAiSubmit(event) {
+            if (event) event.preventDefault();
+            const input = document.getElementById('aiChatInput');
+            const messagesContainer = document.getElementById('aiChatMessages');
+            const typingIndicator = document.getElementById('aiTypingIndicator');
+            const sendBtn = document.getElementById('aiSendBtn');
+            const quickTopics = document.getElementById('aiQuickTopics');
+
+            if (!input || !messagesContainer) return;
+            const userMsg = input.value.trim();
+            if (!userMsg) return;
+
+            // Render User Message
+            const userDiv = document.createElement('div');
+            userDiv.className = 'ai-msg ai-msg-user';
+            userDiv.innerHTML = `<div class="ai-msg-bubble">${escapeHtml(userMsg)}</div>`;
+            messagesContainer.appendChild(userDiv);
+
+            input.value = '';
+            if (sendBtn) sendBtn.disabled = true;
+            if (typingIndicator) typingIndicator.style.display = 'flex';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            try {
+                const response = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: userMsg })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Lỗi kết nối máy chủ');
+                }
+
+                const data = await response.json();
+                const botReply = data.reply || 'Em xin lỗi, hiện tại em chưa tìm thấy câu trả lời phù hợp.';
+
+                // Render Bot Message
+                const botDiv = document.createElement('div');
+                botDiv.className = 'ai-msg ai-msg-bot';
+                botDiv.innerHTML = `
+                    <div class="ai-msg-avatar"><i class="bi bi-stars"></i></div>
+                    <div class="ai-msg-bubble">${botReply}</div>
+                `;
+                messagesContainer.appendChild(botDiv);
+
+                // Update quick suggestion chips if returned
+                if (data.suggestions && data.suggestions.length > 0 && quickTopics) {
+                    quickTopics.innerHTML = '';
+                    data.suggestions.forEach(sug => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'ai-chip';
+                        btn.textContent = sug;
+                        btn.onclick = () => sendAiQuickMessage(sug);
+                        quickTopics.appendChild(btn);
+                    });
+                }
+            } catch (err) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'ai-msg ai-msg-bot';
+                errorDiv.innerHTML = `
+                    <div class="ai-msg-avatar"><i class="bi bi-exclamation-triangle"></i></div>
+                    <div class="ai-msg-bubble text-danger">Dạ máy chủ đang bận, bạn vui lòng thử lại sau giây lát nhé!</div>
+                `;
+                messagesContainer.appendChild(errorDiv);
+            } finally {
+                if (typingIndicator) typingIndicator.style.display = 'none';
+                if (sendBtn) sendBtn.disabled = false;
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                input.focus();
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</div>
+</html>

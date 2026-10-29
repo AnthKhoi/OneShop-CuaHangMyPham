@@ -148,10 +148,9 @@ public class DataInitializer implements CommandLineRunner {
         User userKhoi = initUser("lehuynhanhkhoi2006@gmail.com", "Khoi@123", "Lê Huỳnh Anh Khôi", "0349846114", "TP. Hồ Chí Minh", null, Set.of(roleCustomer));
 
         // 4. Coupons
-        initCoupon("WELCOME50", "Giảm 50.000đ cho đơn từ 100.000đ", CouponDiscountType.FIXED_AMOUNT, BigDecimal.valueOf(50000), BigDecimal.valueOf(100000), null);
-        initCoupon("ONESHOP", "Ưu đãi thành viên giảm 30.000đ mọi đơn hàng", CouponDiscountType.FIXED_AMOUNT, BigDecimal.valueOf(30000), BigDecimal.ZERO, null);
-        initCoupon("ONESHOP10", "Giảm 10% tối đa 100.000đ cho đơn từ 200.000đ", CouponDiscountType.PERCENTAGE, BigDecimal.valueOf(10), BigDecimal.valueOf(200000), BigDecimal.valueOf(100000));
-        initCoupon("BEAUTYVIP", "Ưu đãi khách hàng VIP giảm 15% tối đa 200.000đ", CouponDiscountType.PERCENTAGE, BigDecimal.valueOf(15), BigDecimal.valueOf(500000), BigDecimal.valueOf(200000));
+        initCoupon("WELCOME50", "Giảm 50.000đ cho đơn từ 300.000đ", CouponDiscountType.FIXED_AMOUNT, BigDecimal.valueOf(50000), BigDecimal.valueOf(300000), null);
+        initCoupon("ONESHOP10", "Giảm 10% tối đa 100.000đ cho đơn từ 500.000đ", CouponDiscountType.PERCENTAGE, BigDecimal.valueOf(10), BigDecimal.valueOf(500000), BigDecimal.valueOf(100000));
+        initCoupon("BEAUTYVIP", "Ưu đãi khách hàng VIP giảm 15% tối đa 200.000đ", CouponDiscountType.PERCENTAGE, BigDecimal.valueOf(15), BigDecimal.valueOf(1000000), BigDecimal.valueOf(200000));
 
         // 5. Categories
         Category catSkincare = initCategory("Chăm sóc da mặt", "cham-soc-da-mat", "Các sản phẩm toner, serum, kem dưỡng, chống nắng chuyên sâu.", "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500&q=80", 1);
@@ -980,13 +979,6 @@ public class DataInitializer implements CommandLineRunner {
         couponRepository.findByCodeIgnoreCase(code).ifPresentOrElse(
                 c -> {
                     c.setDescription(desc);
-                    c.setDiscountType(type);
-                    c.setDiscountValue(value);
-                    c.setMinOrderAmount(minOrder);
-                    c.setMaxDiscountAmount(maxDiscount);
-                    c.setActive(true);
-                    c.setStartDate(LocalDateTime.now().minusDays(30));
-                    c.setEndDate(LocalDateTime.now().plusMonths(12));
                     couponRepository.save(c);
                 },
                 () -> couponRepository.save(Coupon.builder()

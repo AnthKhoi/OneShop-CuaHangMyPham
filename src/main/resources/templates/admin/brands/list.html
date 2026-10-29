@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Quản Lý Thương Hiệu — OneShop Admin</title>
+</head>
+<body>
+<div class="row g-4">
+    <!-- Brands Table -->
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="fw-bold m-0 text-dark">Thương hiệu mỹ phẩm</h4>
+            <span class="text-muted small">Tổng: <strong th:text="${#lists.size(brands)}">0</strong> thương hiệu</span>
+        </div>
+
+        <div class="admin-card">
+            <div class="table-responsive">
+                <table class="table admin-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Tên thương hiệu</th>
+                            <th>Slug</th>
+                            <th>Mô tả</th>
+                            <th>Trạng thái</th>
+                            <th class="text-end" style="width: 110px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="b : ${brands}">
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <img th:if="${b.logoUrl != null and not #strings.isEmpty(b.logoUrl)}"
+                                         th:src="${b.logoUrl}" th:alt="${b.name}"
+                                         class="rounded border bg-white p-1 shadow-sm" style="width: 38px; height: 38px; object-fit: contain;"
+                                         onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=100&q=80';">
+                                    <img th:unless="${b.logoUrl != null and not #strings.isEmpty(b.logoUrl)}"
+                                         src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=100&q=80" th:alt="${b.name}"
+                                         class="rounded border bg-white p-1 shadow-sm opacity-75" style="width: 38px; height: 38px; object-fit: cover;">
+                                    <strong class="text-dark" th:text="${b.name}">Thương hiệu</strong>
+                                </div>
+                            </td>
+                            <td><code th:text="${b.slug}">slug</code></td>
+                            <td class="text-muted small text-truncate" style="max-width: 200px;" th:text="${b.description}">Mô tả...</td>
+                            <td>
+                                <span class="badge" th:classappend="${b.active ? 'bg-success' : 'bg-secondary'}" th:text="${b.active ? 'Hoạt động' : 'Tắt'}">Trạng thái</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-primary btn-edit-brand"
+                                            th:data-id="${b.id}"
+                                            th:data-name="${b.name}"
+                                            th:data-slug="${b.slug}"
+                                            th:data-logo-url="${b.logoUrl}"
+                                            th:data-description="${b.description}"
+                                            th:data-active="${b.active}"
+                                            title="Chỉnh sửa thương hiệu">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                    <form th:action="@{'/admin/brands/' + ${b.id} + '/delete'}" method="post" class="d-inline"
+                                          onsubmit="return confirm('Bạn có chắc chắn muốn xóa thương hiệu này không? Các sản phẩm thuộc thương hiệu này phải được cập nhật trước khi xóa.');">
+                                        <button type="submit" class="btn btn-outline-danger" title="Xóa thương hiệu">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(brands)}">
+                            <td colspan="5" class="text-center py-4 text-muted">Chưa có thương hiệu nào. Hãy tạo thương hiệu đầu tiên!</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create / Edit Brand Form Card -->
+    <div class="col-lg-4">
+        <div class="admin-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold m-0" th:text="${editBrand != null ? 'Chỉnh sửa thương hiệu' : 'Thêm thương hiệu mới'}">
+                    <i class="bi bi-plus-circle text-danger me-2"></i>Thêm thương hiệu mới
+                </h5>
+                <a th:if="${editBrand != null}" th:href="@{/admin/brands}" class="btn btn-sm btn-outline-secondary">Hủy bỏ</a>
+            </div>
+
+            <form th:action="@{/admin/brands/save}" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="id" th:value="${editBrand != null ? editBrand.id : ''}">
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Tên thương hiệu <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="name" th:value="${editBrand != null ? editBrand.name : ''}" placeholder="Ví dụ: Bioderma" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Slug URL (tùy chọn)</label>
+                    <input type="text" class="form-control" name="slug" th:value="${editBrand != null ? editBrand.slug : ''}" placeholder="bioderma">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold"><i class="bi bi-upload text-danger me-1"></i> Tải ảnh Logo lên</label>
+                    <input type="file" class="form-control" name="logoFile" accept="image/*">
+                    <small class="text-muted">Chọn tệp ảnh logo từ máy tính (PNG, JPG, WEBP).</small>
+                    <div class="mt-2 d-flex align-items-center gap-2 p-2 bg-light rounded border" th:if="${editBrand != null and editBrand.logoUrl != null and not #strings.isEmpty(editBrand.logoUrl)}">
+                        <img th:src="${editBrand.logoUrl}" alt="Current Logo" class="rounded border bg-white p-1" style="width: 36px; height: 36px; object-fit: contain;">
+                        <small class="text-muted">Logo hiện tại</small>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Mô tả giới thiệu</label>
+                    <textarea class="form-control" rows="2" name="description" placeholder="Mô tả thương hiệu..." th:text="${editBrand != null ? editBrand.description : ''}"></textarea>
+                </div>
+                <div class="mb-3" th:if="${editBrand != null}">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="activeBrandSide" name="active" value="true" th:checked="${editBrand.active}">
+                        <label class="form-check-label small fw-bold" for="activeBrandSide">Kích hoạt thương hiệu</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-danger w-100 py-2">
+                    <i class="bi bi-save me-1"></i> <span th:text="${editBrand != null ? 'Cập nhật thương hiệu' : 'Lưu thương hiệu'}">Lưu thương hiệu</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Chỉnh Sửa Thương Hiệu (Quick Edit Modal) -->
+<div class="modal fade" id="brandEditModal" tabindex="-1" aria-labelledby="brandEditModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold text-dark" id="brandEditModalLabel">
+                    <i class="bi bi-pencil-square text-danger me-2"></i>Chỉnh sửa thương hiệu
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form th:action="@{/admin/brands/save}" method="post" enctype="multipart/form-data">
+                <div class="modal-body p-4">
+                    <input type="hidden" id="modalBrandId" name="id">
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Tên thương hiệu <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="modalBrandName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Slug URL</label>
+                        <input type="text" class="form-control" id="modalBrandSlug" name="slug">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold"><i class="bi bi-upload text-danger me-1"></i> Tải ảnh Logo mới</label>
+                        <input type="file" class="form-control" id="modalBrandLogoFile" name="logoFile" accept="image/*">
+                        <small class="text-muted">Chọn ảnh mới để thay logo (để trống nếu muốn giữ nguyên logo hiện tại).</small>
+                        <div id="modalBrandCurrentLogoWrapper" class="mt-2 d-flex align-items-center gap-2 p-2 bg-light rounded border d-none">
+                            <img id="modalBrandCurrentLogoImg" src="" alt="Current logo" class="rounded border bg-white p-1" style="width: 40px; height: 40px; object-fit: contain;">
+                            <span class="small text-muted">Logo hiện đang sử dụng</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Mô tả giới thiệu</label>
+                        <textarea class="form-control" id="modalBrandDesc" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="modalBrandActive" name="active" value="true">
+                            <label class="form-check-label small fw-bold" for="modalBrandActive">Kích hoạt hoạt động</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-danger px-4">
+                        <i class="bi bi-save me-1"></i> Cập nhật thay đổi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modalEl = document.getElementById('brandEditModal');
+        const modal = new bootstrap.Modal(modalEl);
+
+        document.querySelectorAll('.btn-edit-brand').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.getElementById('modalBrandId').value = this.getAttribute('data-id') || '';
+                document.getElementById('modalBrandName').value = this.getAttribute('data-name') || '';
+                document.getElementById('modalBrandSlug').value = this.getAttribute('data-slug') || '';
+                document.getElementById('modalBrandDesc').value = this.getAttribute('data-description') || '';
+                const active = this.getAttribute('data-active') === 'true';
+                document.getElementById('modalBrandActive').checked = active;
+
+                // Handle current logo preview in modal
+                const logoUrl = this.getAttribute('data-logo-url');
+                const logoWrapper = document.getElementById('modalBrandCurrentLogoWrapper');
+                const logoImg = document.getElementById('modalBrandCurrentLogoImg');
+                if (logoUrl && logoUrl.trim() !== '') {
+                    logoImg.src = logoUrl;
+                    logoWrapper.classList.remove('d-none');
+                } else {
+                    logoWrapper.classList.add('d-none');
+                }
+
+                // Reset file input
+                document.getElementById('modalBrandLogoFile').value = '';
+
+                modal.show();
+            });
+        });
+    });
+</script>
+</body>
+</html>

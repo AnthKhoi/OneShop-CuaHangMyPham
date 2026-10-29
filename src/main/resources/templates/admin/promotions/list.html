@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Quản Lý Khuyến Mãi & Voucher — OneShop Admin</title>
+</head>
+<body>
+<div class="row g-4">
+    <!-- Coupons List -->
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="fw-bold m-0 text-dark">Chương trình khuyến mãi & Voucher</h4>
+            <span class="text-muted small">Tổng: <strong th:text="${#lists.size(coupons)}">0</strong> mã</span>
+        </div>
+
+        <div class="admin-card">
+            <div class="table-responsive">
+                <table class="table admin-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Mã Voucher</th>
+                            <th>Mô tả</th>
+                            <th>Mức giảm</th>
+                            <th>Đơn tối thiểu</th>
+                            <th>Đã dùng / Giới hạn</th>
+                            <th>Trạng thái</th>
+                            <th class="text-end">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(coupons)}">
+                            <td colspan="7" class="text-center py-4 text-muted">
+                                <i class="bi bi-ticket-perforated display-6 d-block mb-2 text-secondary"></i>
+                                Chưa có mã giảm giá nào. Hãy tạo mã đầu tiên bên cạnh!
+                            </td>
+                        </tr>
+                        <tr th:each="c : ${coupons}">
+                            <td><strong class="text-danger font-monospace fs-6" th:text="${c.code}">ONESHOP50</strong></td>
+                            <td class="small text-muted" th:text="${c.description ?: 'Không có'}">Giảm 50k</td>
+                            <td>
+                                <span class="fw-bold text-dark" th:if="${c.discountType.name() == 'PERCENTAGE'}" th:text="${c.discountValue} + '%'">10%</span>
+                                <span class="fw-bold text-dark" th:if="${c.discountType.name() == 'FIXED_AMOUNT'}" th:text="${#numbers.formatDecimal(c.discountValue, 0, 'POINT', 0, 'POINT')} + ' ₫'">50.000 ₫</span>
+                            </td>
+                            <td class="small" th:text="${c.minOrderAmount != null ? #numbers.formatDecimal(c.minOrderAmount, 0, 'POINT', 0, 'POINT') + ' ₫' : '0 ₫'}">0 ₫</td>
+                            <td class="small">
+                                <span class="fw-bold" th:text="${c.usedCount}">0</span>
+                                <span class="text-muted" th:text="'/ ' + (${c.usageLimit != null ? c.usageLimit : '∞'})">/ 100</span>
+                            </td>
+                            <td>
+                                <span class="badge" th:classappend="${c.active ? 'bg-success' : 'bg-secondary'}" th:text="${c.active ? 'Hoạt động' : 'Đã khóa'}">Hoạt động</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <form th:action="@{'/admin/promotions/' + ${c.id} + '/toggle-status'}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-secondary" th:title="${c.active ? 'Khóa voucher' : 'Kích hoạt'}">
+                                            <i class="bi" th:classappend="${c.active ? 'bi-pause-circle text-warning' : 'bi-play-circle text-success'}"></i>
+                                        </button>
+                                    </form>
+                                    <form th:action="@{'/admin/promotions/' + ${c.id} + '/delete'}" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa mã giảm giá này?');">
+                                        <button type="submit" class="btn btn-outline-danger" title="Xóa voucher">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Coupon Form -->
+    <div class="col-lg-4">
+        <div class="admin-card p-4">
+            <h5 class="fw-bold mb-3"><i class="bi bi-tag text-danger me-2"></i>Tạo mã giảm giá mới</h5>
+
+            <form th:action="@{/admin/promotions/save}" th:object="${newCoupon}" method="post">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Mã Voucher (In hoa, không dấu) <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control text-uppercase" th:field="*{code}" placeholder="Ví dụ: HELLO2026, SUMMER50" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Mô tả chương trình</label>
+                    <input type="text" class="form-control" th:field="*{description}" placeholder="Giảm 50k cho đơn từ 300k">
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label small fw-bold">Loại giảm giá <span class="text-danger">*</span></label>
+                        <select class="form-select" th:field="*{discountType}" required>
+                            <option th:each="t : ${discountTypes}" th:value="${t}" th:text="${t.description}">Phần trăm</option>
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small fw-bold">Mức giảm <span class="text-danger">*</span></label>
+                        <input type="number" step="any" class="form-control" th:field="*{discountValue}" placeholder="10 hoặc 50000" required>
+                    </div>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label small fw-bold">Đơn tối thiểu (₫)</label>
+                        <input type="number" step="1000" class="form-control" th:field="*{minOrderAmount}" placeholder="200000">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small fw-bold">Giảm tối đa (₫)</label>
+                        <input type="number" step="1000" class="form-control" th:field="*{maxDiscountAmount}" placeholder="100000">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Giới hạn số lượt dùng (Để trống = Không giới hạn)</label>
+                    <input type="number" class="form-control" th:field="*{usageLimit}" placeholder="100">
+                </div>
+                <button type="submit" class="btn btn-danger w-100 py-2">
+                    <i class="bi bi-plus-circle me-1"></i> Tạo mã giảm giá
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -30,13 +30,6 @@
 <div class="container py-4">
     <h3 class="fw-bold mb-4"><i class="bi bi-credit-card-2-front text-danger me-2"></i>Thanh toán đơn hàng</h3>
 
-    <form id="couponApplyForm" th:action="@{/cart/apply-coupon}" method="post">
-        <input type="hidden" name="redirect" value="/checkout">
-    </form>
-    <form id="couponRemoveForm" th:action="@{/cart/remove-coupon}" method="post">
-        <input type="hidden" name="redirect" value="/checkout">
-    </form>
-
     <form th:action="@{/checkout}" th:object="${checkoutForm}" method="post" accept-charset="UTF-8">
         <input type="hidden" name="shippingRegion" id="shippingRegionHidden" th:field="*{shippingRegion}">
 
@@ -171,27 +164,6 @@
                                 <div class="small text-muted">SL: <span th:text="${item.quantity}">1</span> x <span class="text-nowrap" th:text="${#numbers.formatDecimal(item.price, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</span></div>
                             </div>
                             <div class="fw-bold text-danger small text-nowrap ms-2" th:text="${#numbers.formatDecimal(item.getLineTotal(), 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</div>
-                        </div>
-                    </div>
-
-                    <!-- Voucher / Coupon Box -->
-                    <div class="mb-3 pb-3 border-bottom">
-                        <div class="small fw-bold mb-2 text-dark"><i class="bi bi-ticket-perforated text-danger me-1"></i>Mã giảm giá / Voucher:</div>
-                        <div th:if="${cart.couponCode != null}" class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-0">
-                            <div>
-                                <strong th:text="${cart.couponCode}">WELCOME50</strong>
-                                <small class="d-block text-muted">Đã giảm <span th:text="${#numbers.formatDecimal(cart.discountAmount, 0, 'POINT', 0, 'POINT')} + ' ₫'"></span></small>
-                            </div>
-                            <button type="submit" form="couponRemoveForm" class="btn btn-sm btn-outline-danger py-0 px-2">Gỡ</button>
-                        </div>
-                        <div th:unless="${cart.couponCode != null}">
-                            <div class="input-group">
-                                <input type="text" name="couponCode" form="couponApplyForm" class="form-control form-control-sm text-uppercase" placeholder="Mã giảm (vd: WELCOME50)" required>
-                                <button type="submit" form="couponApplyForm" class="btn btn-sm btn-dark">Áp dụng</button>
-                            </div>
-                            <div class="form-text text-muted" style="font-size: 0.75rem;">
-                                Gợi ý: <span class="badge bg-light text-dark border">WELCOME50</span> (-50k), <span class="badge bg-light text-dark border">ONESHOP10</span> (-10%)
-                            </div>
                         </div>
                     </div>
 

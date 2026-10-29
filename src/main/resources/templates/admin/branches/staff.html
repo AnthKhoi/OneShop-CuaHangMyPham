@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Phân Công Nhân Sự — OneShop Admin</title>
+</head>
+<body>
+<div class="row g-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <a th:href="@{/admin/branches}" class="text-decoration-none small text-muted">
+                    <i class="bi bi-arrow-left"></i> Quay lại danh sách chi nhánh
+                </a>
+                <h4 class="fw-bold m-0 mt-1">
+                    Nhân sự tại chi nhánh: <span class="text-danger" th:text="${branch.name}">Chi nhánh</span>
+                    <small class="text-muted fs-6" th:text="'(' + ${branch.code} + ')'"></small>
+                </h4>
+            </div>
+            <span class="badge bg-primary fs-6 px-3 py-2" th:text="${#lists.size(staffList)} + ' Nhân sự'">0 Nhân sự</span>
+        </div>
+    </div>
+
+    <!-- Assigned Staff List -->
+    <div class="col-lg-8">
+        <div class="admin-card p-4">
+            <h5 class="fw-bold mb-3"><i class="bi bi-person-check text-success me-2"></i>Danh sách nhân sự hiện tại</h5>
+            <div class="table-responsive">
+                <table class="table admin-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Họ và tên</th>
+                            <th>Email</th>
+                            <th>Số điện thoại</th>
+                            <th>Vai trò</th>
+                            <th class="text-end">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(staffList)}">
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                <i class="bi bi-people display-6 d-block mb-2 text-secondary"></i>
+                                Chi nhánh này hiện chưa được gán nhân sự nào.
+                            </td>
+                        </tr>
+                        <tr th:each="st : ${staffList}">
+                            <td><strong class="text-dark" th:text="${st.fullName}">Tên NV</strong></td>
+                            <td class="text-muted small" th:text="${st.email}">Email</td>
+                            <td class="small" th:text="${st.phone ?: 'Chưa cập nhật'}">SĐT</td>
+                            <td>
+                                <span th:each="r : ${st.roles}" class="badge bg-secondary me-1" th:text="${r.name}">ROLE</span>
+                            </td>
+                            <td class="text-end">
+                                <form th:action="@{'/admin/branches/' + ${branch.id} + '/staff/remove'}" method="post" class="d-inline">
+                                    <input type="hidden" name="userId" th:value="${st.id}">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Bạn có chắc muốn rút nhân viên này khỏi chi nhánh?');">
+                                        <i class="bi bi-person-x"></i> Rút khỏi CN
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assign Staff Form -->
+    <div class="col-lg-4">
+        <div class="admin-card p-4">
+            <h5 class="fw-bold mb-3"><i class="bi bi-person-plus text-primary me-2"></i>Thêm nhân sự vào chi nhánh</h5>
+            <p class="text-muted small">Chọn nhân viên từ hệ thống chưa được gán chi nhánh hoặc cần chuyển giao.</p>
+
+            <form th:action="@{'/admin/branches/' + ${branch.id} + '/staff/assign'}" method="post">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Chọn nhân viên / quản lý <span class="text-danger">*</span></label>
+                    <select name="userId" class="form-select" required>
+                        <option value="">-- Chọn nhân viên --</option>
+                        <option th:each="u : ${unassignedStaff}" th:value="${u.id}" th:text="${u.fullName + ' (' + u.email + ')'}"></option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2">
+                    <i class="bi bi-check-circle me-1"></i> Phân công vào chi nhánh
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

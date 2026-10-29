@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Cảnh Báo Tồn Kho Thấp — OneShop Admin</title>
+</head>
+<body>
+<div>
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h3 class="fw-bold m-0 text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Báo cáo sản phẩm dưới ngưỡng an toàn</h3>
+            <p class="text-muted small m-0">Danh sách các mặt hàng có tồn khả dụng &le; ngưỡng đặt hàng lại (Reorder Level)</p>
+        </div>
+        <div>
+            <a th:href="@{/admin/inventory}" class="btn btn-outline-dark">
+                <i class="bi bi-arrow-left me-1"></i> Xem tất cả kho
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert Summary -->
+    <div class="alert alert-warning d-flex align-items-center mb-4 py-3" role="alert">
+        <i class="bi bi-shield-exclamation fs-3 me-3 text-warning"></i>
+        <div>
+            <strong>Cần nhập hàng khẩn cấp:</strong> Hiện có <strong th:text="${#lists.size(lowStockItems)}">0</strong> sản phẩm đang trong tình trạng sắp hết hàng tại các chi nhánh OneShop.
+        </div>
+    </div>
+
+    <!-- Low Stock Table -->
+    <div class="admin-card">
+        <div class="table-responsive">
+            <table class="table admin-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Chi nhánh</th>
+                        <th>Sản phẩm</th>
+                        <th>Tồn vật lý</th>
+                        <th>Khả dụng</th>
+                        <th>Ngưỡng cảnh báo</th>
+                        <th>Đề xuất xử lý</th>
+                        <th class="text-end">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="inv : ${lowStockItems}">
+                        <td>
+                            <strong class="text-dark" th:text="${inv.branch.name}">Chi nhánh</strong>
+                            <small class="text-muted d-block" th:text="${inv.branch.address}">Địa chỉ</small>
+                        </td>
+                        <td>
+                            <strong class="text-dark" th:text="${inv.product.name}">Tên sản phẩm</strong>
+                            <small class="text-muted d-block">SKU: <code th:text="${inv.product.sku}">SKU</code></small>
+                        </td>
+                        <td class="fw-bold text-danger fs-6" th:text="${inv.quantityOnHand}">0</td>
+                        <td class="fw-bold text-danger fs-6" th:text="${inv.getAvailableQuantity()}">0</td>
+                        <td th:text="${inv.reorderLevel}">10</td>
+                        <td>
+                            <span class="text-danger small fw-bold">
+                                Cần nhập thêm tối thiểu <span th:text="${inv.reorderLevel * 2 - inv.getAvailableQuantity()}"></span> sản phẩm
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <a th:href="@{/admin/inventory}" class="btn btn-sm btn-danger">
+                                <i class="bi bi-plus-circle me-1"></i> Nhập kho ngay
+                            </a>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(lowStockItems)}">
+                        <td colspan="7" class="text-center py-4 text-success fw-bold">
+                            <i class="bi bi-check-circle-fill fs-4 me-2"></i> Tất cả sản phẩm đều đang đạt mức tồn kho an toàn!
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

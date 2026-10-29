@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Phương Thức Thanh Toán — OneShop Beauty</title>
+</head>
+<body>
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/}" class="text-decoration-none text-muted"><i class="bi bi-house-door"></i> Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Phương thức thanh toán</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header Banner -->
+            <div class="bg-gradient p-4 p-md-5 rounded-4 text-white mb-4" style="background: linear-gradient(135deg, #1d3557 0%, #457b9d 100%);">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="p-3 bg-white bg-opacity-25 rounded-circle fs-1">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <div>
+                        <h2 class="fw-bold m-0">Phương Thức Thanh Toán</h2>
+                        <p class="m-0 text-white-50 mt-1">Đa dạng, tiện lợi và an toàn tuyệt đối với chuẩn bảo mật thanh toán</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Card -->
+            <div class="bg-white p-4 p-md-5 rounded-4 border shadow-sm">
+                <!-- Method 1: VietQR -->
+                <section class="mb-5">
+                    <div class="p-4 rounded-4 border border-primary-subtle bg-light mb-4">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <span class="badge bg-primary fs-6 px-3 py-2">PHỔ BIẾN NHẤT</span>
+                            <h4 class="fw-bold text-dark m-0"><i class="bi bi-qr-code text-primary me-2"></i>1. Chuyển khoản ngân hàng tự động (VietQR 24/7)</h4>
+                        </div>
+                        <p class="text-secondary">
+                            Hệ thống tự động sinh mã VietQR theo tiêu chuẩn Ngân hàng Nhà nước. Quý khách chỉ cần mở App ngân hàng bất kỳ (Vietcombank, MBBank, Techcombank, VPBank, BIDV, TPBank...) quét mã QR để chuyển khoản. Hệ thống nhận diện và xác thực tự động trong <strong>30 giây</strong>.
+                        </p>
+                        <div class="p-3 bg-white rounded-3 border">
+                            <div class="row g-2">
+                                <div class="col-sm-4 text-muted small">Số tài khoản nhận:</div>
+                                <div class="col-sm-8 fw-bold fs-5 text-danger font-monospace">0349846114</div>
+
+                                <div class="col-sm-4 text-muted small">Tên chủ tài khoản:</div>
+                                <div class="col-sm-8 fw-bold text-dark">LE HUYNH ANH KHOI</div>
+
+                                <div class="col-sm-4 text-muted small">Cú pháp thanh toán:</div>
+                                <div class="col-sm-8 text-secondary"><code>OS-[Mã đơn hàng]</code> (Khi quét QR hệ thống tự động điền)</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Method 2: COD -->
+                <section class="mb-5">
+                    <h4 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                        <i class="bi bi-cash-stack text-success me-2"></i>2. Thanh toán khi nhận hàng (COD)
+                    </h4>
+                    <p class="text-secondary leading-relaxed">
+                        Quý khách nhận kiện hàng từ bưu tá, đồng kiểm ngoại quan hộp và thanh toán tiền mặt trực tiếp cho nhân viên giao hàng. Áp dụng cho mọi đơn hàng giao tận nơi trên toàn quốc mà không cần trả trước.
+                    </p>
+                </section>
+
+                <!-- Method 3: In-Store Payment -->
+                <section class="mb-4">
+                    <h4 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                        <i class="bi bi-credit-card-2-front-fill text-danger me-2"></i>3. Thanh toán trực tiếp tại hệ thống chi nhánh OneShop
+                    </h4>
+                    <p class="text-secondary leading-relaxed">
+                        Đối với khách hàng mua sắm trực tiếp hoặc đặt hàng nhận tại chi nhánh (Pickup), chúng tôi hỗ trợ tất cả các hình thức thanh toán tại quầy POS:
+                    </p>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border text-center h-100">
+                                <i class="bi bi-cash fs-2 text-success mb-2 d-block"></i>
+                                <strong class="d-block">Tiền mặt (VND)</strong>
+                                <small class="text-muted">Nhận hóa đơn VAT điện tử qua email</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border text-center h-100">
+                                <i class="bi bi-credit-card fs-2 text-primary mb-2 d-block"></i>
+                                <strong class="d-block">Quẹt thẻ POS</strong>
+                                <small class="text-muted">Hỗ trợ Visa, Mastercard, JCB, Napas</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border text-center h-100">
+                                <i class="bi bi-phone fs-2 text-danger mb-2 d-block"></i>
+                                <strong class="d-block">Ví điện tử & QR</strong>
+                                <small class="text-muted">MoMo, VNPay, ZaloPay, ShopeePay</small>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Quản Lý Chuỗi Chi Nhánh — OneShop Admin</title>
+</head>
+<body>
+<div class="row g-4">
+    <!-- Branches Table -->
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="fw-bold m-0 text-dark">Hệ thống chuỗi chi nhánh OneShop</h4>
+            <span class="text-muted small">Tổng: <strong th:text="${#lists.size(branches)}">0</strong> chi nhánh</span>
+        </div>
+
+        <div class="admin-card">
+            <div class="table-responsive">
+                <table class="table admin-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Mã CN</th>
+                            <th>Tên chi nhánh</th>
+                            <th>Địa chỉ</th>
+                            <th>Số điện thoại</th>
+                            <th>Giờ mở cửa</th>
+                            <th>Trạng thái</th>
+                            <th class="text-end">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="b : ${branches}">
+                            <td><strong class="text-danger" th:text="${b.code}">CN-001</strong></td>
+                            <td><strong class="text-dark" th:text="${b.name}">Tên</strong></td>
+                            <td class="small text-muted" th:text="${b.address}">Địa chỉ</td>
+                            <td class="small" th:text="${b.phone}">SĐT</td>
+                            <td class="small text-muted" th:text="${b.openingHours}">08:30 - 22:00</td>
+                            <td>
+                                <span class="badge" th:classappend="${b.active ? 'bg-success' : 'bg-secondary'}" th:text="${b.active ? 'Mở cửa' : 'Đóng cửa'}">Trạng thái</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a th:href="@{'/admin/branches/' + ${b.id} + '/staff'}" class="btn btn-outline-primary" title="Quản lý nhân viên">
+                                        <i class="bi bi-people"></i> Nhân sự
+                                    </a>
+                                    <form th:action="@{'/admin/branches/' + ${b.id} + '/toggle-status'}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-secondary" th:title="${b.active ? 'Tạm đóng cửa' : 'Mở cửa trở lại'}">
+                                            <i class="bi" th:classappend="${b.active ? 'bi-pause-circle text-warning' : 'bi-play-circle text-success'}"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Branch Form -->
+    <div class="col-lg-4">
+        <div class="admin-card p-4">
+            <h5 class="fw-bold mb-3"><i class="bi bi-shop text-danger me-2"></i>Thêm chi nhánh mới</h5>
+
+            <form th:action="@{/admin/branches/save}" th:object="${newBranch}" method="post">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Mã chi nhánh (Duy nhất) <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" th:field="*{code}" placeholder="Ví dụ: CN-HP-HB" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Tên chi nhánh <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" th:field="*{name}" placeholder="OneShop Hồng Bàng - Hải Phòng" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Địa chỉ chi tiết <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" th:field="*{address}" placeholder="Số nhà, đường, quận/huyện, tỉnh/TP" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Số điện thoại liên hệ</label>
+                    <input type="tel" class="form-control" th:field="*{phone}" placeholder="0225 1234 567">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Giờ mở cửa</label>
+                    <input type="text" class="form-control" th:field="*{openingHours}" placeholder="08:30 - 22:00">
+                </div>
+                <button type="submit" class="btn btn-danger w-100 py-2">
+                    <i class="bi bi-save me-1"></i> Lưu chi nhánh
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Quản Lý Sản Phẩm — OneShop Admin</title>
+</head>
+<body>
+<div>
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h3 class="fw-bold m-0 text-dark">Danh mục sản phẩm mỹ phẩm</h3>
+            <p class="text-muted small m-0">Quản lý toàn bộ danh mục sản phẩm của hệ thống chuỗi OneShop</p>
+        </div>
+        <div th:if="${currentUser == null or !currentUser.hasRole('ROLE_SALES_STAFF')}">
+            <a th:href="@{/admin/products/new}" class="btn btn-danger">
+                <i class="bi bi-plus-lg me-1"></i> Thêm sản phẩm mới
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="admin-card p-3 mb-4">
+        <form th:action="@{/admin/products}" method="get" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <input type="text" name="keyword" class="form-control form-control-sm" placeholder="Tìm tên hoặc SKU..." th:value="${keyword}">
+            </div>
+            <div class="col-md-3">
+                <select name="category" class="form-select form-select-sm">
+                    <option value="">Tất cả danh mục</option>
+                    <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}" th:selected="${selectedCategory == c.id}">Category</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="brand" class="form-select form-select-sm">
+                    <option value="">Tất cả thương hiệu</option>
+                    <option th:each="b : ${brands}" th:value="${b.id}" th:text="${b.name}" th:selected="${selectedBrand == b.id}">Brand</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-dark flex-grow-1">Tìm</button>
+                <a th:href="@{/admin/products}" class="btn btn-sm btn-outline-secondary">Xóa</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Products Table -->
+    <div class="admin-card">
+        <div class="table-responsive">
+            <table class="table admin-table align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;">Ảnh</th>
+                        <th>Thông tin sản phẩm</th>
+                        <th>Danh mục</th>
+                        <th>Thương hiệu</th>
+                        <th>Giá bán</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="product : ${products}">
+                        <td>
+                            <img th:src="${product.primaryImageUrl}" th:alt="${product.name}" class="rounded-2 border" style="width: 50px; height: 50px; object-fit: cover;" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&q=80';">
+                        </td>
+                        <td>
+                            <strong class="d-block text-dark" th:text="${product.name}">Tên sản phẩm</strong>
+                            <small class="text-muted">SKU: <span class="fw-bold" th:text="${product.sku}">SKU-001</span> | Slug: <span th:text="${product.slug}">slug</span></small>
+                        </td>
+                        <td th:text="${product.category.name}">Danh mục</td>
+                        <td>
+                            <span class="badge bg-light text-dark border" th:text="${product.brand.name}">Brand</span>
+                        </td>
+                        <td>
+                            <strong class="text-danger" th:text="${#numbers.formatDecimal(product.price, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</strong>
+                            <small class="d-block text-muted text-decoration-line-through" th:if="${product.hasDiscount()}" th:text="${#numbers.formatDecimal(product.compareAtPrice, 0, 'POINT', 0, 'POINT')} + ' ₫'"></small>
+                        </td>
+                        <td>
+                            <span class="badge" th:classappend="${product.active ? 'bg-success' : 'bg-secondary'}" th:text="${product.active ? 'Đang bán' : 'Tạm ngừng'}">Trạng thái</span>
+                        </td>
+                        <td class="text-end" th:if="${currentUser == null or !currentUser.hasRole('ROLE_SALES_STAFF')}">
+                            <div class="btn-group btn-group-sm">
+                                <a th:href="@{'/admin/products/' + ${product.id} + '/edit'}" class="btn btn-outline-secondary" title="Sửa">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form th:if="${product.active}" th:action="@{'/admin/products/' + ${product.id} + '/delete'}" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn ngừng kinh doanh sản phẩm này?');">
+                                    <button type="submit" class="btn btn-outline-danger" title="Ngừng bán">
+                                        <i class="bi bi-pause-circle"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                        <td class="text-end" th:if="${currentUser != null and currentUser.hasRole('ROLE_SALES_STAFF')}">
+                            <span class="badge bg-light text-secondary border"><i class="bi bi-eye me-1"></i>Chỉ xem</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(products)}">
+                        <td colspan="7" class="text-center py-4 text-muted">Không tìm thấy sản phẩm nào</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="p-3 border-top" th:if="${productPage.totalPages > 1}">
+            <ul class="pagination pagination-sm justify-content-center m-0">
+                <li class="page-item" th:classappend="${productPage.first ? 'disabled' : ''}">
+                    <a class="page-link" th:href="@{/admin/products(keyword=${keyword}, category=${selectedCategory}, brand=${selectedBrand}, page=${productPage.number - 1})}">&laquo;</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, productPage.totalPages - 1)}" th:classappend="${productPage.number == i ? 'active' : ''}">
+                    <a class="page-link" th:href="@{/admin/products(keyword=${keyword}, category=${selectedCategory}, brand=${selectedBrand}, page=${i})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${productPage.last ? 'disabled' : ''}">
+                    <a class="page-link" th:href="@{/admin/products(keyword=${keyword}, category=${selectedCategory}, brand=${selectedBrand}, page=${productPage.number + 1})}">&raquo;</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+</html>

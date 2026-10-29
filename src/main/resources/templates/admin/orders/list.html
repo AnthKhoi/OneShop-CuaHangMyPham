@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Quản Lý Đơn Hàng — OneShop Admin</title>
+</head>
+<body>
+<div>
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h3 class="fw-bold m-0 text-dark" th:text="${currentUser != null and currentUser.isAdmin() ? 'Quản lý đơn hàng toàn chuỗi' : ('Đơn hàng chi nhánh — ' + (currentUser != null and currentUser.branchName != null ? currentUser.branchName : 'Chi nhánh'))}">Quản lý đơn hàng toàn chuỗi</h3>
+            <p class="text-muted small m-0" th:text="${currentUser != null and currentUser.isAdmin() ? 'Tiếp nhận, xử lý, xác nhận đóng gói và cập nhật tiến độ giao hàng toàn hệ thống' : ('Danh sách các đơn hàng phân bổ cho ' + (currentUser != null and currentUser.branchName != null ? currentUser.branchName : 'chi nhánh'))}">Tiếp nhận, xử lý, xác nhận đóng gói và cập nhật tiến độ giao hàng</p>
+        </div>
+        <div>
+            <a th:href="@{/admin/pos}" class="btn btn-danger fw-bold shadow-sm">
+                <i class="bi bi-cart-plus-fill me-1"></i> Bán hàng tại quầy (POS)
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="admin-card p-3 mb-4">
+        <form th:action="@{/admin/orders}" method="get" class="row g-2 align-items-center">
+            <div class="col-md-3" th:if="${currentUser != null and currentUser.isAdmin()}">
+                <select name="branchId" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="" th:selected="${selectedBranchId == null}">Tất cả chi nhánh</option>
+                    <option th:each="b : ${branches}" th:value="${b.id}" th:text="${b.name}" th:selected="${selectedBranchId == b.id}">Branch</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="" th:selected="${selectedStatus == null}">Tất cả trạng thái</option>
+                    <option th:each="s : ${orderStatuses}" th:value="${s.name()}" th:text="${s.description}" th:selected="${selectedStatus != null and selectedStatus.name() == s.name()}">Status</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <input type="text" name="keyword" class="form-control form-control-sm" placeholder="Tìm theo mã đơn, người nhận, SĐT..." th:value="${keyword}">
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-dark flex-grow-1">Lọc</button>
+                <a th:href="@{/admin/orders}" class="btn btn-sm btn-outline-secondary">Xóa</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="admin-card">
+        <div class="table-responsive">
+            <table class="table admin-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Ngày đặt</th>
+                        <th>Chi nhánh xử lý</th>
+                        <th>Khách hàng</th>
+                        <th>Hình thức</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="order : ${orders}">
+                        <td>
+                            <strong class="text-danger" th:text="${order.orderCode}">OS-001</strong>
+                        </td>
+                        <td class="small" th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">26/10/2026</td>
+                        <td>
+                            <strong th:text="${order.branch.name}">Chi nhánh</strong>
+                        </td>
+                        <td>
+                            <div class="fw-semibold" th:text="${order.recipientName}">Khách</div>
+                            <small class="text-muted" th:text="${order.recipientPhone}">SĐT</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border" th:text="${order.fulfillmentType.description}">Giao hàng</span>
+                        </td>
+                        <td>
+                            <strong class="text-danger" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</strong>
+                        </td>
+                        <td>
+                            <span class="badge" th:classappend="${order.status.name() == 'COMPLETED' ? 'bg-success' : (order.status.name() == 'CANCELLED' ? 'bg-danger' : 'bg-warning text-dark')}" th:text="${order.status.description}">Trạng thái</span>
+                        </td>
+                        <td class="text-end">
+                            <a th:href="@{'/admin/orders/' + ${order.id}}" class="btn btn-sm btn-dark">
+                                Chi tiết &raquo;
+                            </a>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(orders)}">
+                        <td colspan="8" class="text-center py-4 text-muted">Không tìm thấy đơn hàng nào khớp điều kiện lọc</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="p-3 border-top" th:if="${orderPage.totalPages > 1}">
+            <ul class="pagination pagination-sm justify-content-center m-0">
+                <li class="page-item" th:classappend="${orderPage.first ? 'disabled' : ''}">
+                    <a class="page-link" th:href="@{/admin/orders(branchId=${selectedBranchId}, status=${selectedStatus}, keyword=${keyword}, page=${orderPage.number - 1})}">&laquo;</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, orderPage.totalPages - 1)}" th:classappend="${orderPage.number == i ? 'active' : ''}">
+                    <a class="page-link" th:href="@{/admin/orders(branchId=${selectedBranchId}, status=${selectedStatus}, keyword=${keyword}, page=${i})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${orderPage.last ? 'disabled' : ''}">
+                    <a class="page-link" th:href="@{/admin/orders(branchId=${selectedBranchId}, status=${selectedStatus}, keyword=${keyword}, page=${orderPage.number + 1})}">&raquo;</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+</html>

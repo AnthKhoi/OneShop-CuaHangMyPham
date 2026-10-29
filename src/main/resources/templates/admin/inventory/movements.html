@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Nhật Ký Biến Động Kho — OneShop Admin</title>
+</head>
+<body>
+<div>
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h3 class="fw-bold m-0 text-dark">Nhật ký biến động tồn kho (Stock Movements)</h3>
+            <p class="text-muted small m-0">Truy vết mọi giao dịch nhập, xuất, bán hàng, hoàn kho và điều chỉnh kiểm kê</p>
+        </div>
+        <div>
+            <a th:href="@{/admin/inventory}" class="btn btn-outline-dark">
+                <i class="bi bi-arrow-left me-1"></i> Trở về kho chi nhánh
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="admin-card p-3 mb-4">
+        <form th:action="@{/admin/inventory/movements}" method="get" class="row g-2 align-items-center">
+            <div class="col-md-5" th:if="${currentUser != null and currentUser.isAdmin()}">
+                <select name="branchId" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="" th:selected="${selectedBranchId == null}">Tất cả chi nhánh</option>
+                    <option th:each="b : ${branches}" th:value="${b.id}" th:text="${b.name}" th:selected="${selectedBranchId == b.id}">Branch</option>
+                </select>
+            </div>
+            <div class="col-md-5">
+                <select name="movementType" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="" th:selected="${selectedType == null}">Tất cả loại biến động</option>
+                    <option th:each="t : ${movementTypes}" th:value="${t.name()}" th:text="${t.description}" th:selected="${selectedType != null and selectedType.name() == t.name()}">Type</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <a th:href="@{/admin/inventory/movements}" class="btn btn-sm btn-outline-secondary w-100">Xóa lọc</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Movements Table -->
+    <div class="admin-card">
+        <div class="table-responsive">
+            <table class="table admin-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Thời gian</th>
+                        <th>Chi nhánh</th>
+                        <th>Sản phẩm</th>
+                        <th>Loại biến động</th>
+                        <th>Thay đổi</th>
+                        <th>Trước / Sau</th>
+                        <th>Tham chiếu</th>
+                        <th>Lý do</th>
+                        <th>Người thực hiện</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="m : ${movements}">
+                        <td class="small" th:text="${#temporals.format(m.createdAt, 'dd/MM/yyyy HH:mm:ss')}">26/10/2026</td>
+                        <td class="fw-semibold" th:text="${m.branch.name}">Chi nhánh</td>
+                        <td>
+                            <strong class="d-block text-dark" th:text="${m.product.name}">Sản phẩm</strong>
+                            <small class="text-muted">SKU: <span th:text="${m.product.sku}">SKU</span></small>
+                        </td>
+                        <td>
+                            <span class="badge" th:classappend="${m.movementType.name() == 'IMPORT' or m.movementType.name() == 'RETURN' ? 'bg-success' : (m.movementType.name() == 'SALE' ? 'bg-primary' : (m.movementType.name() == 'ADJUSTMENT' ? 'bg-warning text-dark' : 'bg-danger'))}" th:text="${m.movementType.description}">Loại</span>
+                        </td>
+                        <td>
+                            <strong th:classappend="${m.quantityDelta > 0 ? 'text-success' : 'text-danger'}" th:text="${(m.quantityDelta > 0 ? '+' : '') + m.quantityDelta}">+10</strong>
+                        </td>
+                        <td class="small text-muted" th:text="${m.quantityBefore + ' &rarr; ' + m.quantityAfter}">10 &rarr; 20</td>
+                        <td>
+                            <span class="badge bg-light text-dark border" th:text="${m.referenceId != null ? m.referenceId : m.referenceType}">REF</span>
+                        </td>
+                        <td class="small text-muted" style="max-width: 200px;" th:text="${m.reason}">Lý do</td>
+                        <td class="small fw-semibold" th:text="${m.performedBy}">Người thực hiện</td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(movements)}">
+                        <td colspan="9" class="text-center py-4 text-muted">Chưa có bản ghi biến động nào</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="p-3 border-top" th:if="${movementPage.totalPages > 1}">
+            <ul class="pagination pagination-sm justify-content-center m-0">
+                <li class="page-item" th:classappend="${movementPage.first ? 'disabled' : ''}">
+                    <a class="page-link" th:href="@{/admin/inventory/movements(branchId=${selectedBranchId}, movementType=${selectedType}, page=${movementPage.number - 1})}">&laquo;</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, movementPage.totalPages - 1)}" th:classappend="${movementPage.number == i ? 'active' : ''}">
+                    <a class="page-link" th:href="@{/admin/inventory/movements(branchId=${selectedBranchId}, movementType=${selectedType}, page=${i})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${movementPage.last ? 'disabled' : ''}">
+                    <a class="page-link" th:href="@{/admin/inventory/movements(branchId=${selectedBranchId}, movementType=${selectedType}, page=${movementPage.number + 1})}">&raquo;</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+</html>

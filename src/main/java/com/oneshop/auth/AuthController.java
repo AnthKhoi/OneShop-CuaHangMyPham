@@ -26,7 +26,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AuthController {
 
     private final AuthService authService;
-    private final OtpService otpService;
 
     @GetMapping("/logout")
     public String logout(HttpServletRequest request, HttpServletResponse response, RedirectAttributes redirectAttributes) {
@@ -247,11 +246,6 @@ public class AuthController {
             return "redirect:/auth/reset-password?email=" + email.trim() + "&token=" + resetToken;
         } catch (IllegalArgumentException ex) {
             model.addAttribute("errorMessage", ex.getMessage());
-            model.addAttribute("email", email);
-            model.addAttribute("type", OtpType.PASSWORD_RESET);
-            return "store/auth/verify-reset-otp";
-        } catch (Exception ex) {
-            model.addAttribute("errorMessage", "Xác thực thất bại: " + ex.getMessage());
             model.addAttribute("email", email);
             model.addAttribute("type", OtpType.PASSWORD_RESET);
             return "store/auth/verify-reset-otp";

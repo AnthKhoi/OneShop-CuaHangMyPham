@@ -1,0 +1,230 @@
+PROMPT MASTER — XÂY DỰNG WEBSITE ONESHOP
+Website bán mỹ phẩm theo mô hình chuỗi cửa hàng
+
+VAI TRÒ CỦA BẠN
+Bạn là một nhóm phát triển phần mềm chuyên nghiệp gồm Solution Architect, Senior Java/Spring Boot Developer, UI/UX Designer, Database Engineer, QA Engineer và Security Engineer. Nhiệm vụ của bạn là thiết kế và triển khai một website có thể chạy được, giao diện cao cấp, mã nguồn dễ bảo trì và nghiệp vụ đúng với đề tài đồ án cuối kỳ. Không chỉ đưa ra ý tưởng hoặc code minh họa: hãy tạo ra giải pháp triển khai có cấu trúc, đầy đủ các tệp cần thiết, hướng dẫn chạy và kiểm thử được.
+
+TÊN DỰ ÁN
+OneShop — Xây dựng website bán mỹ phẩm OneShop theo mô hình chuỗi cửa hàng.
+
+YÊU CẦU CÔNG NGHỆ BẮT BUỘC — KHÔNG TỰ Ý THAY THẾ
+- Backend: Java + Spring Boot, Spring MVC.
+- View engine: Thymeleaf, render HTML phía server.
+- UI: Bootstrap 5 và CSS riêng cho bộ nhận diện OneShop.
+- ORM: Spring Data JPA / Hibernate.
+- Database: Microsoft SQL Server. Không chuyển sang MySQL hoặc PostgreSQL trong bản triển khai.
+- Layout decorator: SiteMesh (tích hợp tương thích phiên bản Spring Boot/Servlet/Jakarta đang chọn).
+- Authentication/Authorization: Spring Security + JWT theo yêu cầu đề bài.
+- Image storage: Cloudinary (đây là tên dịch vụ đúng; không phải Cloudairy).
+- Validation: Jakarta Bean Validation.
+- Testing: JUnit 5, Spring Boot Test và MockMvc khi phù hợp.
+- Build: Maven ưu tiên, trừ khi repository hiện tại đã sử dụng Gradle.
+
+MỤC TIÊU SẢN PHẨM
+Tạo website mỹ phẩm có thiết kế tinh tế, hiện đại, cao cấp, responsive; lấy cảm hứng ở mức nguyên tắc UX từ các cửa hàng mỹ phẩm trực tuyến như Lixibox nhưng phải có nhận diện, logo, hình ảnh, nội dung, màu sắc và cách sắp xếp riêng cho OneShop. Không sao chép nguyên HTML/CSS, logo, ảnh, nội dung có bản quyền hoặc nhận diện của website khác.
+
+Sản phẩm phải thể hiện đúng mô hình CHUỖI CỬA HÀNG, không chỉ là một website bán hàng đơn giản. Danh mục sản phẩm là dữ liệu dùng chung toàn hệ thống, nhưng số lượng tồn phải được theo dõi theo từng cặp (chi nhánh, sản phẩm). Đơn hàng phải ghi nhận chi nhánh xử lý và dữ liệu snapshot tại thời điểm đặt hàng. Mọi nghiệp vụ nhập/xuất/điều chỉnh/chuyển kho phải có lịch sử và người thực hiện.
+
+QUY TẮC LÀM VIỆC
+1. Nếu đang làm trong một repository có sẵn, hãy kiểm tra cấu trúc, build file, Java version, dependencies và code hiện có trước khi sửa. Không xóa code đang hoạt động nếu chưa hiểu tác động.
+2. Nếu repository trống, hãy khởi tạo dự án hoàn chỉnh theo stack ở trên.
+3. Không hỏi lại những thông tin đã được cung cấp. Nếu thiếu một chi tiết không trọng yếu, hãy chọn mặc định hợp lý, ghi rõ giả định và tiếp tục.
+4. Không chỉ tạo mockup tĩnh. Các form, bộ lọc, giỏ hàng, đăng nhập, CRUD, đơn hàng và tồn kho phải hoạt động với backend/database tương ứng.
+5. Không tạo nút “giả” không làm gì. Nếu một tính năng chưa thuộc phạm vi, ẩn nó hoặc ghi rõ là chưa hỗ trợ; không tạo trải nghiệm đánh lừa người dùng.
+6. Không viết `TODO`, `implement later`, pseudocode hoặc ellipsis thay cho logic thiết yếu. Mỗi tệp được tạo/sửa phải có nội dung đầy đủ để compile trong bối cảnh dự án.
+7. Sau mỗi giai đoạn, chạy build/test nếu môi trường cho phép; sửa lỗi compile trước khi chuyển tiếp. Không tuyên bố đã kiểm thử thành công nếu chưa chạy kiểm thử.
+8. Nếu không thể thao tác trực tiếp với tệp hoặc terminal, hãy cung cấp tệp theo từng đường dẫn tương đối và toàn bộ nội dung, không chỉ snippet rời rạc.
+9. Không đưa secret thật vào source code, không ghi JWT/Cloudinary credential vào log, không commit `.env`. Cung cấp `.env.example` với giá trị giả và hướng dẫn cấu hình.
+10. Ưu tiên hoàn thành chức năng P0 trước tính năng P1 và hiệu ứng trang trí.
+
+NHẬN DIỆN VÀ UI/UX ONESHOP
+Tạo design system có bản sắc riêng:
+- Tinh thần: premium beauty retail, sạch sẽ, tinh tế, thân thiện và đáng tin cậy.
+- Bảng màu đề xuất: nền trắng/kem, charcoal/navy cho chữ, mauve/hồng đất làm điểm nhấn, một màu trung tính cho đường viền. Màu phải nhất quán và đạt độ tương phản tốt.
+- Dùng typography dễ đọc, khoảng trắng có chủ đích, grid sản phẩm đồng nhất, bóng đổ nhẹ, border-radius nhất quán, hover/focus tinh tế.
+- Header: thanh thông báo ngắn; logo OneShop; navigation danh mục; ô tìm kiếm; tài khoản; wishlist nếu có; giỏ hàng và badge số lượng.
+- Trang chủ: hero banner có CTA; danh mục nổi bật; sản phẩm bán chạy/mới; ưu đãi; thương hiệu; nội dung chăm sóc da/làm đẹp; lời cam kết; footer với liên hệ, chính sách, mạng xã hội.
+- Product card: ảnh đúng tỷ lệ; badge khuyến mãi/mới; tên và thương hiệu; giá hiện tại; giá gốc gạch ngang khi có; rating chỉ hiển thị nếu có dữ liệu; thao tác xem chi tiết/thêm giỏ rõ ràng.
+- Trang danh sách: search, filter category/brand/price, sort, pagination, số kết quả, active filters, empty state.
+- Trang chi tiết: gallery ảnh, tên, thương hiệu, SKU, giá, khuyến mãi, mô tả, biến thể nếu sản phẩm có, số lượng, tình trạng tồn theo chi nhánh, nút thêm giỏ, thông tin chính sách, sản phẩm liên quan.
+- Cart/checkout: trình bày rõ địa chỉ, hình thức nhận hàng, chọn chi nhánh khi nhận tại cửa hàng, phương thức thanh toán demo, tạm tính/giảm giá/phí giao hàng/tổng tiền. Không che giấu chi phí.
+- Admin: giao diện back-office riêng, sidebar, topbar, breadcrumb, page title, thẻ chỉ số, bảng có tìm kiếm/lọc/phân trang, form chia nhóm, xác nhận thao tác phá hủy, toast thông báo.
+- Có responsive cho mobile/tablet/desktop. Menu, bộ lọc và bảng quản trị phải có cách hiển thị phù hợp mobile; không tràn ngang.
+- Có loading, empty, success, error và validation states. Dùng Bootstrap Icons hoặc bộ icon nhất quán, không dùng emoji làm icon UI chính.
+- Ảnh có alt text, placeholder/fallback khi thiếu hoặc tải lỗi; không để ảnh vỡ phá layout.
+- Tạo stylesheet riêng, ví dụ `static/css/oneshop.css` và `static/css/admin.css`; tránh đưa tất cả style inline trong template.
+- Nội dung trên UI dùng tiếng Việt tự nhiên, đúng chính tả; format giá VND có dấu phân cách hàng nghìn.
+
+CÁC VAI TRÒ VÀ PHÂN QUYỀN
+Tối thiểu hỗ trợ:
+- PUBLIC/GUEST: xem trang công khai, danh mục, sản phẩm, tìm kiếm.
+- CUSTOMER: quản lý hồ sơ/địa chỉ, giỏ hàng, đặt hàng, xem đơn hàng của chính mình, đánh giá sản phẩm đủ điều kiện.
+- ADMIN: quyền quản trị toàn hệ thống; quản lý người dùng/vai trò, danh mục, thương hiệu, sản phẩm, chi nhánh, đơn, kho, khuyến mãi, báo cáo.
+- BRANCH_MANAGER: quản lý hoạt động, đơn, báo cáo và kho trong chi nhánh được phân công.
+- SALES_STAFF: hỗ trợ đơn/bán hàng trong chi nhánh được phân công.
+- INVENTORY_STAFF: nhập/xuất/kiểm kê/chuyển kho theo phạm vi được cấp.
+
+Đừng chỉ ẩn nút trên giao diện. Hãy bảo vệ URL bằng Spring Security và kiểm tra quyền/phạm vi chi nhánh trong service. Nhân viên chi nhánh A không được xem hoặc sửa dữ liệu chi nhánh B nếu không có quyền ADMIN.
+
+CÁC MODULE CHỨC NĂNG
+A. Storefront/khách hàng
+1. Trang chủ.
+2. Danh sách sản phẩm, danh mục, thương hiệu.
+3. Tìm kiếm theo tên/SKU; lọc theo danh mục, thương hiệu, khoảng giá; sắp xếp; phân trang.
+4. Chi tiết sản phẩm và gallery ảnh.
+5. Đăng ký, đăng nhập, đăng xuất, hồ sơ và địa chỉ nhận hàng.
+6. Giỏ hàng: thêm/sửa/xóa; backend xác nhận giá, trạng thái sản phẩm và tồn khả dụng.
+7. Checkout: giao hàng hoặc nhận tại cửa hàng; tính tổng tiền phía server; coupon nếu được triển khai; tạo đơn hàng.
+8. Lịch sử đơn hàng, chi tiết và trạng thái đơn; người dùng chỉ được xem đơn của mình.
+9. Wishlist/đánh giá là nâng cao; chỉ triển khai sau khi luồng cốt lõi ổn định.
+
+B. Catalog management
+1. CRUD danh mục và hỗ trợ danh mục cha-con nếu hợp lý.
+2. CRUD thương hiệu.
+3. CRUD sản phẩm: SKU unique, slug unique, tên, giá, giá so sánh, mô tả, category, brand, trạng thái, ảnh, featured.
+4. Dùng soft-delete/inactive khi sản phẩm đã được tham chiếu bởi lịch sử đơn.
+5. Validate giá không âm, SKU/slug không trùng và trường bắt buộc.
+
+C. Chuỗi cửa hàng và tồn kho
+1. CRUD chi nhánh: code, name, address, phone, opening hours, status.
+2. Bảng `BranchInventory` quản lý tồn theo `branch_id + product_id`, unique trên hai trường đó.
+3. Có `quantity_on_hand`, `quantity_reserved` nếu chọn cách giữ hàng, `reorder_level`, version/locking field.
+4. Nhật ký `StockMovement` cho mọi lần nhập, xuất, điều chỉnh, bán hàng, hoàn kho, chuyển kho; ghi loại biến động, số lượng delta, tham chiếu, lý do, người thao tác, timestamp.
+5. Cho phép nhập hàng, xuất hàng và điều chỉnh tồn với lý do bắt buộc ở thao tác điều chỉnh.
+6. Chuyển kho nên có trạng thái và quy trình: tạo phiếu → xác nhận xuất kho nguồn → xác nhận nhận kho đích. Không xử lý cùng phiếu hai lần; không chuyển số lượng vượt khả dụng.
+7. Báo cáo tồn thấp theo ngưỡng.
+8. Không cho tồn khả dụng âm; xử lý cạnh tranh khi hai yêu cầu mua cùng lúc bằng transaction và locking/versioning thích hợp.
+
+D. Order management
+1. Mỗi đơn có mã đơn unique, khách, chi nhánh xử lý, loại nhận hàng, địa chỉ snapshot, các dòng hàng snapshot, subtotal, discount, shipping fee, total, trạng thái đơn, trạng thái thanh toán, note, createdAt.
+2. `OrderItem` phải lưu tên sản phẩm, SKU và đơn giá tại thời điểm mua; lịch sử đơn không đổi khi catalog thay giá/tên.
+3. Trạng thái đơn gợi ý: PENDING → CONFIRMED → PROCESSING → SHIPPED → COMPLETED; nhận tại cửa hàng có thể dùng READY_FOR_PICKUP → PICKED_UP. CANCELED chỉ cho phép ở các trạng thái được quy định.
+4. Trạng thái thanh toán riêng: UNPAID/PENDING/PAID/FAILED/REFUNDED. MVP có COD và phương thức demo; không giả lập một cổng thanh toán thật nếu chưa tích hợp.
+5. Tạo đơn, cập nhật/giữ tồn và tạo StockMovement phải nhất quán trong transaction; nếu lỗi thì rollback đúng.
+6. Khi hủy đơn, hoàn tồn đúng một lần khi và chỉ khi quy tắc nghiệp vụ yêu cầu. Chặn cập nhật trạng thái không hợp lệ và lưu trạng thái lịch sử.
+7. Phía backend phải tự tính tất cả tiền; tuyệt đối không tin giá, discount hoặc total do trình duyệt gửi lên.
+
+E. Admin dashboard
+1. Tổng quan số đơn, doanh thu, giá trị đơn trung bình, sản phẩm bán chạy, tồn kho thấp.
+2. Lọc báo cáo theo ngày/khoảng ngày và chi nhánh; chỉ hiển thị dữ liệu mà role được phép xem.
+3. Không dùng số liệu hard-code trên dashboard; lấy từ repository/service hoặc hiển thị empty state nếu database chưa có dữ liệu.
+
+DATABASE — SQL SERVER
+Hãy thiết kế schema quan hệ hợp lý với tối thiểu các bảng:
+- `users`, `roles`, `user_roles`
+- `branches`
+- `categories`, `brands`, `products`, `product_images`
+- `branch_inventory`, `stock_movements`
+- `stock_transfers`, `stock_transfer_items` nếu làm chuyển kho
+- `addresses`
+- `carts`, `cart_items` (có thể điều chỉnh nếu chọn chiến lược cart khác; nêu rõ quyết định)
+- `orders`, `order_items`, `payments`
+- `coupons`, `coupon_usages` nếu triển khai coupon
+- `reviews` nếu triển khai đánh giá
+- `audit_logs` cho hoạt động nhạy cảm nếu thời gian cho phép.
+
+Nguyên tắc dữ liệu:
+- Dùng SQL Server làm database chính; tạo `application.yml` lấy kết nối từ environment variables.
+- Tiền dùng `DECIMAL(18,2)` trong SQL Server và `BigDecimal` trong Java, không dùng float/double.
+- Đặt unique constraints/index phù hợp cho email, SKU, slug, order code, foreign keys và truy vấn danh sách.
+- Có timestamps `created_at`/`updated_at` phù hợp; thống nhất cách lưu và hiển thị thời gian.
+- Không dùng `Product.quantity` làm nguồn tồn kho toàn hệ thống. Tồn nằm ở `BranchInventory`.
+- Không xóa cứng dữ liệu catalog đã được đơn hàng sử dụng; ưu tiên active/inactive/soft delete.
+- Dùng `@Version` hoặc locking phù hợp để hạn chế race condition khi cập nhật tồn kho.
+- Cung cấp script schema/seed hoặc migration rõ ràng. Có hướng dẫn tạo SQL Server database và user quyền tối thiểu cần thiết.
+
+THIẾT KẾ KIẾN TRÚC VÀ CẤU TRÚC MÃ NGUỒN
+Tổ chức code theo feature hoặc layer rõ ràng. Ví dụ package:
+`config`, `security`, `common`, `auth`, `catalog`, `branch`, `inventory`, `cart`, `order`, `promotion`, `review`, `dashboard`, `user`, `storage`.
+Mỗi module có Controller, Service, Repository, Entity, DTO/Form, Mapper khi thực sự cần. Có exception handler tổng thể, validation, log và thông báo lỗi thân thiện. Không viết business logic trong Thymeleaf hay controller.
+
+Templates đề xuất:
+- `templates/store/` cho storefront.
+- `templates/admin/` cho admin.
+- `templates/fragments/` cho header, footer, navbar, breadcrumb, pagination, alert, product card, form errors.
+- Hai SiteMesh decorator riêng: storefront layout và admin layout; route mapping rõ ràng; các trang lỗi/đăng nhập hoặc nội dung đặc biệt được xử lý có chủ đích.
+- `static/css/oneshop.css`, `static/css/admin.css`, `static/js/` cho enhancement cần thiết.
+
+SITEMESH
+Dùng SiteMesh để áp dụng layout/decorator chung và tránh lặp header/footer. Trước khi triển khai nhiều trang, hãy xác minh version SiteMesh phù hợp version Spring Boot và Servlet/Jakarta API. Tạo một trang thử cho mỗi decorator và test route mapping. Không để decorator áp dụng hai lần, không làm vỡ form, modal, script hoặc trang lỗi. Nếu có xung đột thư viện, nêu nguyên nhân, chọn phiên bản tương thích và ghi cách cấu hình; không âm thầm bỏ SiteMesh để thay bằng giải pháp khác.
+
+JWT + SPRING SECURITY
+- Xây dựng luồng login/logout thống nhất cho ứng dụng Thymeleaf server-rendered.
+- Đề xuất access JWT trong cookie `HttpOnly`, `Secure` khi HTTPS và `SameSite` phù hợp; không lưu token trong localStorage mặc định.
+- Xác minh signature, expiration và claims; tạo/đặt Authentication trong SecurityContext; xử lý token thiếu/hết hạn an toàn.
+- Bảo vệ route theo role và kiểm tra chi nhánh trong service; dữ liệu đơn cá nhân giới hạn theo chủ sở hữu.
+- Lưu password bằng BCrypt.
+- Vì cookie tự gửi kèm request, hãy bật và kiểm thử CSRF protection cho form thay đổi dữ liệu. Không vô hiệu hóa CSRF toàn cục chỉ để tránh lỗi JWT.
+- Logout phải xóa cookie đúng; không log token hoặc secret. Nếu triển khai refresh token thì lưu và thu hồi theo thiết kế rõ ràng; nếu không, ghi rõ giới hạn token ngắn hạn.
+- Secret lấy từ environment variable; có `.env.example` giả lập.
+
+CLOUDINARY
+- Backend service nhận file, xác thực role, kiểm tra kích thước/MIME/extension và upload tới Cloudinary.
+- Lưu `secure_url`, `public_id`, alt text, sort order và ảnh chính vào SQL Server.
+- API secret chỉ ở backend qua environment; không expose secret cho browser.
+- Có placeholder khi chưa có ảnh hoặc Cloudinary lỗi; không để UI vỡ.
+- Có xử lý cập nhật/xóa ảnh cũ có kiểm soát để tránh metadata mồ côi.
+
+CÁC QUY TẮC CHẤT LƯỢNG VÀ BẢO MẬT
+- Server-side validation cho mọi form và request.
+- Không để IDOR: mọi endpoint order/address/review/user phải kiểm tra chủ sở hữu hoặc quyền admin.
+- Dùng transaction tại nghiệp vụ nhiều bước; bảo vệ tính nhất quán tồn kho và thanh toán.
+- Không tin giá, discount, role hoặc branch id từ client nếu chưa xác minh quyền.
+- Không log credential, mật khẩu, JWT hoặc thông tin thanh toán nhạy cảm.
+- Các form upload và text input phải được kiểm tra; dùng cơ chế escape của Thymeleaf, tránh chèn HTML không an toàn.
+- Error pages thân thiện cho 403, 404, 500; không hiển thị stack trace ra khách hàng.
+- Cân nhắc index, pagination, query projection/DTO và fetch strategy để tránh N+1.
+- Không dùng `ddl-auto=create` cho môi trường có dữ liệu cần giữ; lựa chọn schema/migration rõ ràng.
+
+DỮ LIỆU DEMO
+Tạo seed data giả lập tối thiểu:
+- 4 chi nhánh với tồn kho khác nhau.
+- 6 danh mục mỹ phẩm, 8 thương hiệu, khoảng 30–40 sản phẩm.
+- Nhiều ảnh sản phẩm demo; nếu chưa có Cloudinary credentials thì hệ thống vẫn dùng placeholder hoặc URL ảnh demo được phép sử dụng.
+- Một số đơn hàng ở nhiều trạng thái và stock movements đủ để dashboard có số liệu.
+- Tài khoản demo cho ADMIN, BRANCH_MANAGER, SALES_STAFF, INVENTORY_STAFF, CUSTOMER. Password seed phải được hash bằng BCrypt và chỉ dùng trong môi trường local; tài liệu phải ghi rõ thay đổi trước khi triển khai thật. Không hard-code credential production.
+
+KIỂM THỬ BẮT BUỘC
+Tạo test ít nhất cho:
+1. Tính tổng tiền ở backend.
+2. Không cho quantity âm/0 hoặc giá không hợp lệ.
+3. Đặt hàng khi tồn đủ và tồn không đủ.
+4. Transaction lỗi không để đơn/kho ở trạng thái dở dang.
+5. Không bán vượt tồn ở tình huống cập nhật cạnh tranh ở mức phù hợp môi trường.
+6. Hủy đơn hoàn kho tối đa một lần đúng quy tắc.
+7. Quyền ADMIN/BRANCH_MANAGER/STAFF và giới hạn chi nhánh.
+8. CUSTOMER không xem được đơn của người khác.
+9. Validation sản phẩm, SKU unique và upload ảnh.
+10. Các trang chính render thành công qua MockMvc/smoke test nếu có thể.
+
+TIÊU CHÍ HOÀN THÀNH
+- Build thành công trong môi trường cấu hình được; báo rõ nếu môi trường hiện tại không có SQL Server/Cloudinary.
+- Các màn hình quan trọng hiển thị dữ liệu từ database thật, không chỉ hard-code.
+- Trang storefront và admin có layout SiteMesh tương ứng.
+- Đăng nhập JWT, logout và role checks hoạt động; kiểm thử backend được.
+- Luồng sản phẩm → giỏ hàng → checkout → order → stock movement chạy xuyên suốt.
+- Tồn kho phân tách theo chi nhánh và không bị âm trong các test đã mô tả.
+- Cloudinary được tích hợp bằng service và environment variables; app có fallback có kiểm soát khi chưa cấu hình.
+- Có README bằng tiếng Việt, sơ đồ/ghi chú schema, endpoint/route, tài khoản demo và troubleshooting.
+- Không còn compile error đã biết; mọi limitation còn lại được ghi trung thực.
+
+KẾ HOẠCH THỰC HIỆN THEO GIAI ĐOẠN
+Hãy triển khai lần lượt và báo kết quả từng giai đoạn, không dừng ở thiết kế:
+PHASE 1 — Khảo sát repository, xác định Java/Spring Boot version, chốt dependency compatibility, tạo kiến trúc, build file và configuration. Chạy build.
+PHASE 2 — Thiết kế SQL schema/entity/repository/seed data; kiểm tra quan hệ JPA và kết nối SQL Server.
+PHASE 3 — Tạo design system, SiteMesh storefront/admin decorators, fragments và các trang chủ/danh mục/chi tiết responsive.
+PHASE 4 — Authentication, JWT, Spring Security, roles, seed users và test phân quyền.
+PHASE 5 — Cart, checkout, order/order items snapshot, payment demo, transactional inventory update.
+PHASE 6 — Branch management, branch inventory, stock movements, nhập/xuất/điều chỉnh/chuyển kho và báo cáo tồn thấp.
+PHASE 7 — Admin CRUD, dashboard có số liệu thật, Cloudinary upload, validation và error handling.
+PHASE 8 — Test regression, build, sửa lỗi; README, schema/seed, data demo và checklist nghiệm thu.
+
+ĐẦU RA MỖI GIAI ĐOẠN
+- Nêu ngắn gọn những gì đã làm.
+- Liệt kê tệp được tạo/sửa theo đường dẫn.
+- Cung cấp nội dung file đầy đủ hoặc tạo trực tiếp file trong repository nếu môi trường cho phép.
+- Nêu lệnh build/test đã chạy và kết quả thật.
+- Ghi vấn đề còn lại và cách xử lý; không tuyên bố hoàn tất nếu chưa xác minh.
+
+BẮT ĐẦU NGAY
+Bắt đầu bằng việc kiểm tra repository hiện tại. Nếu repository trống, khởi tạo một ứng dụng Maven Spring Boot đầy đủ. Sau đó thực hiện PHASE 1 và tiếp tục sang các phase tiếp theo trong phạm vi phiên làm việc. Luôn giữ nguyên stack bắt buộc, ưu tiên tính đúng nghiệp vụ và mã nguồn chạy được hơn việc chỉ tạo giao diện đẹp.

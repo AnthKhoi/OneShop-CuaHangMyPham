@@ -56,11 +56,6 @@ public class GlobalModelAttributes {
         return catalogService.getRootCategories();
     }
 
-    @ModelAttribute("globalBrands")
-    public Object getGlobalBrands() {
-        return catalogService.getActiveBrands();
-    }
-
     @ModelAttribute("globalBranches")
     public Object getGlobalBranches() {
         return branchService.getActiveBranches();

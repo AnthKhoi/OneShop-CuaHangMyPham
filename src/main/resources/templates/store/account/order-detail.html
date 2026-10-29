@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="'Chi Tiết Đơn Hàng #' + ${order.orderCode} + ' — OneShop'">Chi Tiết Đơn Hàng</title>
+</head>
+<body>
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a th:href="@{/}" class="text-decoration-none">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/account/orders}" class="text-decoration-none">Đơn hàng của tôi</a></li>
+            <li class="breadcrumb-item active" aria-current="page" th:text="'#' + ${order.orderCode}">#OS-001</li>
+        </ol>
+    </nav>
+
+    <div class="bg-white p-4 rounded-4 border shadow-sm mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3 mb-4 gap-2">
+            <div>
+                <span class="text-muted small">Chi tiết đơn hàng:</span>
+                <h4 class="fw-bold m-0 text-danger" th:text="'#' + ${order.orderCode}">#OS-001</h4>
+                <small class="text-muted" th:text="'Đặt lúc: ' + ${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">Thời gian</small>
+            </div>
+            <div>
+                <span class="badge fs-6 py-2 px-3" th:classappend="${order.status.name() == 'COMPLETED' ? 'bg-success' : (order.status.name() == 'CANCELLED' ? 'bg-danger' : 'bg-warning text-dark')}" th:text="${order.status.description}">Trạng thái</span>
+            </div>
+        </div>
+
+        <!-- Info Grid -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="p-3 bg-light rounded-3 h-100">
+                    <h6 class="fw-bold text-dark mb-2"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Địa chỉ nhận hàng</h6>
+                    <div class="fw-semibold" th:text="${order.recipientName}">Tên người nhận</div>
+                    <div class="text-muted small" th:text="'Điện thoại: ' + ${order.recipientPhone}">SĐT</div>
+                    <div class="text-muted small mt-1" th:text="${order.shippingAddress}">Địa chỉ giao</div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="p-3 bg-light rounded-3 h-100">
+                    <h6 class="fw-bold text-dark mb-2"><i class="bi bi-shop text-danger me-1"></i> Chi nhánh xử lý</h6>
+                    <div class="fw-semibold" th:text="${order.branch.name}">Tên chi nhánh</div>
+                    <div class="text-muted small" th:text="${order.branch.address}">Địa chỉ chi nhánh</div>
+                    <div class="text-muted small mt-1">Hình thức: <span class="fw-bold text-dark" th:text="${order.fulfillmentType.description}">Giao hàng</span></div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="p-3 bg-light rounded-3 h-100">
+                    <h6 class="fw-bold text-dark mb-2"><i class="bi bi-credit-card text-danger me-1"></i> Thanh toán</h6>
+                    <div class="fw-semibold" th:text="${order.paymentMethod.description}">Phương thức</div>
+                    <div class="small mt-1">
+                        Trạng thái: 
+                        <span class="badge" th:classappend="${order.paymentStatus.name() == 'PAID' ? 'bg-success' : 'bg-secondary'}" th:text="${order.paymentStatus.description}">Chưa TT</span>
+                    </div>
+                    <div class="text-muted small mt-2" th:if="${order.note != null}">
+                        <em>Ghi chú: <span th:text="${order.note}"></span></em>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cancel Reason Alert if Cancelled -->
+        <div th:if="${order.status.name() == 'CANCELLED'}" class="alert alert-danger mb-4">
+            <i class="bi bi-x-circle-fill me-2"></i>
+            <strong>Đơn hàng đã bị hủy.</strong> Lý do: <span th:text="${order.cancelReason}">Lý do hủy</span>
+        </div>
+
+        <!-- Items Table -->
+        <h5 class="fw-bold mb-3">Danh sách sản phẩm trong đơn</h5>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Đơn giá snapshot</th>
+                        <th>Số lượng</th>
+                        <th class="text-end">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="item : ${order.items}">
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <img th:src="${item.imageUrl}" th:alt="${item.productName}" 
+                                     onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&q=80';"
+                                     class="rounded-3 border" style="width: 48px; height: 48px; object-fit: cover;">
+                                <div>
+                                    <div class="fw-bold" th:text="${item.productName}">Tên sản phẩm</div>
+                                    <small class="text-muted">SKU: <span th:text="${item.skuSnapshot}">SKU</span></small>
+                                </div>
+                            </div>
+                        </td>
+                        <td th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</td>
+                        <td th:text="${item.quantity}">1</td>
+                        <td class="text-end fw-bold text-danger" th:text="${#numbers.formatDecimal(item.lineTotal, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-end text-muted">Tạm tính:</td>
+                        <td class="text-end fw-bold" th:text="${#numbers.formatDecimal(order.subtotal, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</td>
+                    </tr>
+                    <tr th:if="${order.discountAmount.compareTo(T(java.math.BigDecimal).ZERO) > 0}">
+                        <td colspan="3" class="text-end text-muted">Giảm giá voucher:</td>
+                        <td class="text-end text-success fw-bold" th:text="'- ' + ${#numbers.formatDecimal(order.discountAmount, 0, 'POINT', 0, 'POINT')} + ' ₫'">-0 ₫</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="text-end text-muted">Phí giao hàng:</td>
+                        <td class="text-end fw-bold" th:text="${order.shippingFee.compareTo(T(java.math.BigDecimal).ZERO) == 0 ? 'MIỄN PHÍ' : #numbers.formatDecimal(order.shippingFee, 0, 'POINT', 0, 'POINT') + ' ₫'}">0 ₫</td>
+                    </tr>
+                    <tr class="table-light">
+                        <td colspan="3" class="text-end fs-5 fw-bold">Tổng tiền:</td>
+                        <td class="text-end fs-4 fw-bold text-danger" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Cancel Order Action for Customer if in PENDING state -->
+        <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center" th:if="${order.status.canCancel()}">
+            <span class="text-muted small">Đơn hàng đang chờ xử lý, bạn có thể yêu cầu hủy đơn nếu cần đổi ý.</span>
+            
+            <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#cancelOrderModal">
+                <i class="bi bi-x-circle me-1"></i> Hủy đơn hàng này
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cancel Order -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-hidden="true" th:if="${order.status.canCancel()}">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form th:action="@{'/account/orders/' + ${order.orderCode} + '/cancel'}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-danger">Xác nhận hủy đơn hàng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn hủy đơn hàng <strong>#<span th:text="${order.orderCode}"></span></strong> không?</p>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Vui lòng nhập lý do hủy đơn <span class="text-danger">*</span></label>
+                        <input type="text" name="reason" class="form-control" placeholder="Ví dụ: Đặt nhầm sản phẩm, muốn đổi địa chỉ..." required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-danger">Xác nhận hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
